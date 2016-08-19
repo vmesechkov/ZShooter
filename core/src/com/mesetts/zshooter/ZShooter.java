@@ -1,22 +1,17 @@
 package com.mesetts.zshooter;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+
+import java.awt.Point;
+
+import static com.badlogic.gdx.Gdx.app;
 
 public class ZShooter implements ApplicationListener {
 	SpriteBatch batch;
@@ -30,6 +25,9 @@ public class ZShooter implements ApplicationListener {
 	static Vector2 screenDrawOffset;
 	int cameraX;
 	int cameraY;
+	static float screenWidth;
+	static float screenHeight;
+
 
 	Tile tile1;
 	Tile tile2;
@@ -41,15 +39,22 @@ public class ZShooter implements ApplicationListener {
 		batch = new SpriteBatch();
 
 		//Create camera
-		float aspectRatio = (float) Gdx.graphics.getWidth() / (float) Gdx.graphics.getHeight();
+		float aspectRatio = (float) Gdx.app.getGraphics().getWidth() / (float) Gdx.app.getGraphics().getHeight();
+
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 10f, 10f*aspectRatio);
+		camera.setToOrtho(false, 10f,  10f*aspectRatio);
 
 		//Create a Stage and add TouchPad
-		stage = new Stage(new FitViewport(1920, 1080, camera), batch);
+		stage = new Stage(new FitViewport(1920,1080, camera), batch);
 		Gdx.input.setInputProcessor(stage);
 
-		screenDrawOffset = new Vector2(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+		//Get viewport sizes
+		screenWidth = stage.getViewport().getWorldWidth();
+		screenHeight = stage.getViewport().getWorldHeight();
+
+
+
+		screenDrawOffset = new Vector2(screenWidth / 2, screenHeight / 2);
 
 		player = new Player("data/legs_run_sheet_128.png", "data/torso_run_sheet_128.png");
 
