@@ -16,4 +16,10 @@ public class Tile {
         tileTex = new Texture(Gdx.files.internal(tex));
     }
 
+    public void draw(){
+
+    }
+
+
+
 }
