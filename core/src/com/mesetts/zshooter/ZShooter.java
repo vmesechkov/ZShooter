@@ -2,9 +2,11 @@ package com.mesetts.zshooter;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -29,10 +31,8 @@ public class ZShooter implements ApplicationListener {
 	static float screenHeight;
 
 
-	Tile tile1;
-	Tile tile2;
-	Tile tile3;
-	Tile tile4;
+	TileMap map;
+	FPSLogger fpsLogger = new FPSLogger();
 
 	@Override
 	public void create () {
@@ -53,25 +53,15 @@ public class ZShooter implements ApplicationListener {
 		screenHeight = stage.getViewport().getWorldHeight();
 
 
-
 		screenDrawOffset = new Vector2(screenWidth / 2, screenHeight / 2);
 
 		player = new Player("data/legs_run_sheet_128.png", "data/torso_run_sheet_128.png");
 
-		tile1 = new Tile("data/Textures/asphalt1.png");
-		tile1.x = 0;
-		tile1.y = 0;
-		tile2 = new Tile("data/Textures/asphalt1.png");
-		tile2.x = 64;
-		tile2.y = 0;
-		tile3 = new Tile("data/Textures/asphalt1.png");
-		tile3.x = 0;
-		tile3.y = 64;
-		tile4 = new Tile("data/Textures/asphalt1.png");
-		tile4.x = 64;
-		tile4.y = 64;
+		map = new TileMap(2000,2000);
 
 		playerController = new PlayerController(player, stage);
+
+		GLProfiler.enable();
 	}
 
 	@Override
@@ -97,10 +87,7 @@ public class ZShooter implements ApplicationListener {
 		//batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-		batch.draw(tile1.tileTex, tile1.x - cameraX + (int)screenDrawOffset.x, tile1.y - cameraY + (int)screenDrawOffset.y);
-		batch.draw(tile2.tileTex, tile2.x - cameraX + (int)screenDrawOffset.x, tile2.y - cameraY + (int)screenDrawOffset.y);
-		batch.draw(tile3.tileTex, tile3.x - cameraX + (int)screenDrawOffset.x, tile3.y - cameraY + (int)screenDrawOffset.y);
-		batch.draw(tile4.tileTex, tile4.x - cameraX + (int)screenDrawOffset.x, tile4.y - cameraY + (int)screenDrawOffset.y);
+		map.draw(batch, cameraX, cameraY);
 
 		player.draw(batch, cameraX, cameraY);
 
@@ -108,6 +95,11 @@ public class ZShooter implements ApplicationListener {
 
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
+
+		fpsLogger.log();
+		Gdx.app.log("Texture Bindings: ", Integer.toString(GLProfiler.textureBindings));
+		Gdx.app.log("Draw Calls: ", Integer.toString(GLProfiler.drawCalls));
+		GLProfiler.reset();
 	}
 
 	@Override

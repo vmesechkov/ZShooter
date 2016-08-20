@@ -7,9 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
-/**
- * Created by EpsiloN on 8/18/2016.
- */
 public class PlayerController {
 
     Player player;
@@ -58,8 +55,10 @@ public class PlayerController {
         stage.addActor(rotationTouchpad);
     }
 
+    float convToDegreesMultiplier = (float)(180 / Math.PI);
+
     public float calculateAngleOfKnob(final float valueX, final float valueY) {
-        return (float) ((Math.atan2(valueY , valueX)) * (180 / Math.PI));
+        return (float) ((Math.atan2(valueY , valueX)) * convToDegreesMultiplier);
     }
 
     public boolean update() {
