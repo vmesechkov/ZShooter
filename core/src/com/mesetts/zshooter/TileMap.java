@@ -18,8 +18,8 @@ public class TileMap {
 
     TileMap(final int width, final int height) {
 
-        Texture textureSheet = new Texture(Gdx.files.internal("data/Textures/textureSheet1_64.png"));
-        textures = TextureRegion.split(textureSheet, 64, 64);
+        Texture textureSheet = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+        textures = TextureRegion.split(textureSheet, 128, 128);
 
         tilemap_content = new int[width][height];
         tilemap_tile_positions = new int[width][height][2];
@@ -27,10 +27,82 @@ public class TileMap {
         for(int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 tilemap_content[i][j] = r.nextInt(2);
-                tilemap_tile_positions[i][j][0] = i * 64;
-                tilemap_tile_positions[i][j][1] = j * 64;
+                tilemap_tile_positions[i][j][0] = i * 128;
+                tilemap_tile_positions[i][j][1] = j * 128;
             }
         }
+
+        tilemap_content[0][0] = 0;
+        tilemap_content[1][0] = 1;
+        tilemap_content[2][0] = 2;
+        tilemap_content[3][0] = 3;
+        tilemap_content[4][0] = 2;
+        tilemap_content[5][0] = 4;
+        tilemap_content[6][0] = 0;
+
+        tilemap_content[0][1] = 0;
+        tilemap_content[1][1] = 1;
+        tilemap_content[2][1] = 2;
+        tilemap_content[3][1] = 3;
+        tilemap_content[4][1] = 2;
+        tilemap_content[5][1] = 4;
+        tilemap_content[6][1] = 0;
+
+        tilemap_content[0][2] = 0;
+        tilemap_content[1][2] = 1;
+        tilemap_content[2][2] = 2;
+        tilemap_content[3][2] = 3;
+        tilemap_content[4][2] = 2;
+        tilemap_content[5][2] = 4;
+        tilemap_content[6][2] = 0;
+
+        tilemap_content[0][3] = 0;
+        tilemap_content[1][3] = 1;
+        tilemap_content[2][3] = 2;
+        tilemap_content[3][3] = 3;
+        tilemap_content[4][3] = 2;
+        tilemap_content[5][3] = 4;
+        tilemap_content[6][3] = 0;
+
+        tilemap_content[0][4] = 0;
+        tilemap_content[1][4] = 1;
+        tilemap_content[2][4] = 2;
+        tilemap_content[3][4] = 3;
+        tilemap_content[4][4] = 2;
+        tilemap_content[5][4] = 4;
+        tilemap_content[6][4] = 0;
+
+        tilemap_content[0][5] = 0;
+        tilemap_content[1][5] = 1;
+        tilemap_content[2][5] = 2;
+        tilemap_content[3][5] = 3;
+        tilemap_content[4][5] = 2;
+        tilemap_content[5][5] = 4;
+        tilemap_content[6][5] = 0;
+
+        tilemap_content[0][6] = 0;
+        tilemap_content[1][6] = 1;
+        tilemap_content[2][6] = 2;
+        tilemap_content[3][6] = 3;
+        tilemap_content[4][6] = 2;
+        tilemap_content[5][6] = 4;
+        tilemap_content[6][6] = 0;
+
+        tilemap_content[0][7] = 6;
+        tilemap_content[1][7] = 2;
+        tilemap_content[2][7] = 2;
+        tilemap_content[3][7] = 2;
+        tilemap_content[4][7] = 2;
+        tilemap_content[5][7] = 2;
+        tilemap_content[6][7] = 6;
+
+        tilemap_content[0][8] = 2;
+        tilemap_content[1][8] = 2;
+        tilemap_content[2][8] = 2;
+        tilemap_content[3][8] = 2;
+        tilemap_content[4][8] = 2;
+        tilemap_content[5][8] = 2;
+        tilemap_content[6][8] = 2;
     }
 
     int tileScreenPosX;
@@ -43,10 +115,10 @@ public class TileMap {
     int drawOffsetY;
 
     public void draw(final SpriteBatch batch, final int cameraX, final int cameraY) {
-        int lowerBoundX = (cameraX - (int)InGameScreen.screenDrawOffset.x) / 64;
-        int lowerBoundY = (cameraY - (int)InGameScreen.screenDrawOffset.y) / 64;
-        int upperBoundX = (cameraX + (int)InGameScreen.screenDrawOffset.x) / 64 + 1;
-        int upperBoundY = (cameraY + (int)InGameScreen.screenDrawOffset.y) / 64 + 1;
+        int lowerBoundX = (cameraX - (int)InGameScreen.screenDrawOffset.x) / 128;
+        int lowerBoundY = (cameraY - (int)InGameScreen.screenDrawOffset.y) / 128;
+        int upperBoundX = (cameraX + (int)InGameScreen.screenDrawOffset.x) / 128 + 1;
+        int upperBoundY = (cameraY + (int)InGameScreen.screenDrawOffset.y) / 128 + 1;
         // Restrict lower bound to > than 0
         lowerBoundX = (lowerBoundX < 0) ? 0 : lowerBoundX;
         lowerBoundY = (lowerBoundY < 0) ? 0 : lowerBoundY;

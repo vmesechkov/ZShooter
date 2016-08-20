@@ -8,9 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-/**
- * Created by EpsiloN on 8/17/2016.
- */
 public class Player {
     private static final int        FRAME_COLS = 16;
     private static final int        FRAME_ROWS = 1;
@@ -77,7 +74,7 @@ public class Player {
 
         stateTime = 0f;
 
-        movementSpeed = 5;
+        movementSpeed = 10;
     }
 
     public void draw(SpriteBatch batch, int offsetX, int offsetY) {
