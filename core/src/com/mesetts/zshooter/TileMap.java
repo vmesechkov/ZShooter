@@ -43,10 +43,10 @@ public class TileMap {
     int drawOffsetY;
 
     public void draw(final SpriteBatch batch, final int cameraX, final int cameraY) {
-        int lowerBoundX = (cameraX - (int)ZShooter.screenDrawOffset.x) / 64;
-        int lowerBoundY = (cameraY - (int)ZShooter.screenDrawOffset.y) / 64;
-        int upperBoundX = (cameraX + (int)ZShooter.screenDrawOffset.x) / 64 + 1;
-        int upperBoundY = (cameraY + (int)ZShooter.screenDrawOffset.y) / 64 + 1;
+        int lowerBoundX = (cameraX - (int)InGameScreen.screenDrawOffset.x) / 64;
+        int lowerBoundY = (cameraY - (int)InGameScreen.screenDrawOffset.y) / 64;
+        int upperBoundX = (cameraX + (int)InGameScreen.screenDrawOffset.x) / 64 + 1;
+        int upperBoundY = (cameraY + (int)InGameScreen.screenDrawOffset.y) / 64 + 1;
         // Restrict lower bound to > than 0
         lowerBoundX = (lowerBoundX < 0) ? 0 : lowerBoundX;
         lowerBoundY = (lowerBoundY < 0) ? 0 : lowerBoundY;
@@ -61,8 +61,8 @@ public class TileMap {
         upperBoundX = (upperBoundX < tilemap_content.length - 1) ? upperBoundX : tilemap_content.length - 1;
         upperBoundY = (upperBoundY < tilemap_content[upperBoundX].length - 1) ? upperBoundY : tilemap_content[upperBoundX].length - 1;
 
-        drawOffsetX = cameraX - (int)ZShooter.screenDrawOffset.x;
-        drawOffsetY = cameraY - (int)ZShooter.screenDrawOffset.y;
+        drawOffsetX = cameraX - (int)InGameScreen.screenDrawOffset.x;
+        drawOffsetY = cameraY - (int)InGameScreen.screenDrawOffset.y;
 
         for (int i = lowerBoundX; i < upperBoundX; i++) {
             for (int j = lowerBoundY; j < upperBoundY; j++) {

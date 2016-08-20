@@ -83,16 +83,16 @@ public class Player {
     public void draw(SpriteBatch batch, int offsetX, int offsetY) {
 
         batch.draw(currentLegsFrame,
-                x - offsetX + ZShooter.screenDrawOffset.x,   // Player image coordinates
-                y - offsetY + ZShooter.screenDrawOffset.y,   // (Bottom left corner...)
+                x - offsetX + InGameScreen.screenDrawOffset.x,   // Player image coordinates
+                y - offsetY + InGameScreen.screenDrawOffset.y,   // (Bottom left corner...)
                 playerImageHalfSizeX, playerImageHalfSizeY, // Rotation origin within the player image
                 playerImageSizeX, playerImageSizeY,     // Player image dimentions
                 1, 1,   // Scale X/Y = 1
                 legsPan);
 
         batch.draw(currentTorsoFrame,
-                x - offsetX + ZShooter.screenDrawOffset.x,   // Player image coordinates
-                y - offsetY + ZShooter.screenDrawOffset.y,   // (Bottom left corner...)
+                x - offsetX + InGameScreen.screenDrawOffset.x,   // Player image coordinates
+                y - offsetY + InGameScreen.screenDrawOffset.y,   // (Bottom left corner...)
                 playerImageHalfSizeX, playerImageHalfSizeY, // Rotation origin within the player image
                 playerImageSizeX, playerImageSizeY,     // Player image dimentions
                 1, 1,   // Scale X/Y = 1

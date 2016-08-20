@@ -49,7 +49,7 @@ public class PlayerController {
         movementTouchpad.setBounds(15, 15, 400, 400);
 
         rotationTouchpad = new Touchpad(10, touchpadStyle);
-        rotationTouchpad.setBounds(ZShooter.screenWidth - 415, 15, 400, 400);
+        rotationTouchpad.setBounds(InGameScreen.screenWidth - 415, 15, 400, 400);
 
         stage.addActor(movementTouchpad);
         stage.addActor(rotationTouchpad);
