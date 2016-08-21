@@ -3,6 +3,7 @@ package com.mesetts.zshooter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -30,10 +32,12 @@ public class MainMenu implements Screen {
     Game game;
     private Stage stage;
     private TextureAtlas buttonsAtlas; //** image of buttons **//
-    private BitmapFont font;
+    private BitmapFont font,fontTitle;
+    private Label.LabelStyle fontTitleStyle;
     private Skin buttonSkin; //** images are used as skins of the button **//
     private TextButton button;
     private TextButton button1;
+    private Label title;
 
 
     MainMenu(Game game){
@@ -43,35 +47,44 @@ public class MainMenu implements Screen {
     public void show() {
 
 
-        buttonsAtlas = new TextureAtlas("all/button.pack"); //**button atlas image **//
+        buttonsAtlas = new TextureAtlas("gdx-skins-master/Styles + Skins + Fonts/skin/star-soldier-ui.atlas"); //**button atlas image **//
         buttonSkin = new Skin();
         buttonSkin.addRegions(buttonsAtlas); //** skins for on and off **//
-        font = new BitmapFont(Gdx.files.internal("all/new.fnt"), false); //** font **//
+        font = new BitmapFont(Gdx.files.internal("gdx-skins-master/Styles + Skins + Fonts/skin/font-export.fnt"), false); //** font **//
+        fontTitle = new BitmapFont(Gdx.files.internal("gdx-skins-master/Styles + Skins + Fonts/skin/font-title-export.fnt"));
+
+        fontTitleStyle = new Label.LabelStyle(fontTitle,fontTitle.getColor());
         this.batch = new SpriteBatch();
         this.stage = new Stage(new FitViewport(1920, 1080), this.batch);
         Gdx.input.setInputProcessor(stage);
 
 
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(); //** Button properties **//
-        style.up = buttonSkin.getDrawable("buttonOff");
-        style.down = buttonSkin.getDrawable("buttonOn");
+        style.up = buttonSkin.getDrawable("button");
+        style.down = buttonSkin.getDrawable("button-selected");
 
         style.font = font;
-        font.getData().setScale(5);
+        font.getData().setScale(4);
+        fontTitle.getData().setScale(2.5f);
         float screenWidth = stage.getViewport().getWorldWidth();
         float  screenHeight = stage.getViewport().getWorldHeight();
 
-        button = new TextButton("Rjhghjgj", style);
-        button1 = new TextButton("asdasd", style);
+        button = new TextButton("Play", style);
+        button1 = new TextButton("Options", style);
+
+        title = new Label("ZSHOOTER", fontTitleStyle);
+        title.setHeight(screenHeight/3);
+        //title.setWidth(screenWidth/3);
+        title.setPosition(screenWidth / 2 - title.getWidth()/2,screenHeight/1.4f);
         //** Button text and style **//
-        button.setHeight(screenHeight / 2); //** Button Height **//
-        button.setWidth(screenWidth / 2); //** Button Width **//
+        button.setHeight(screenHeight / 3); //** Button Height **//
+        button.setWidth(screenWidth / 3); //** Button Width **//
 
-        button1.setHeight(screenHeight / 2); //** Button Height **//
-        button1.setWidth(screenWidth / 2); //** Button Width **//
+        button1.setHeight(screenHeight / 3); //** Button Height **//
+        button1.setWidth(screenWidth / 3); //** Button Width **//
 
-        button.setPosition(screenWidth / 2 - button.getWidth()/2, screenHeight / 7 );
-        button1.setPosition(screenWidth / 2 - button.getWidth()/2, screenHeight/ 2);
+        button.setPosition(screenWidth / 2 - button.getWidth()/2, screenHeight/ 2.8f);
+        button1.setPosition(screenWidth / 2 - button.getWidth()/2, 0);
 
 
         button.addListener(new InputListener() {
@@ -91,6 +104,22 @@ public class MainMenu implements Screen {
                  }
         });
 
+        button1.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("my app", "Pressed"); //** Usually used to start Game, etc. **//
+
+
+
+
+                return true;
+
+            }
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                game.setScreen(new OptionsScreen(game));
+                dispose();
+            }
+        });
+
 //    public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
 //        Gdx.app.log("my app", "Rggggggeleased");
 //
@@ -106,8 +135,10 @@ public class MainMenu implements Screen {
 //    moveAction.setPosition(0,0);
 //    moveAction.setDuration(.5f);
 //    button.addAction(moveAction);
+
         stage.addActor(button1);
         stage.addActor(button);
+        stage.addActor(title);
 
     }
 
