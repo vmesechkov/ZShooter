@@ -16,7 +16,7 @@ android {
     }
     defaultConfig {
         applicationId "com.mesetts.zshooter"
-        minSdkVersion 8
+        minSdkVersion 11
         targetSdkVersion 23
     }
 }
