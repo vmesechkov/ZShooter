@@ -9,9 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Disposable;
 
-/**
- * Created by EpsiloN on 8/23/2016.
- */
 public class GUI implements Disposable {
 
 	private static GUI gui;			// Singleton reference to GUI object

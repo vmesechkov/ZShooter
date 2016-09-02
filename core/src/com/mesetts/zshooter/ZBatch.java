@@ -3,10 +3,6 @@ package com.mesetts.zshooter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.collision.Segment;
-
-import java.awt.Point;
-import java.util.TreeSet;
 
 public class ZBatch extends SpriteBatch {
 
@@ -41,25 +37,23 @@ public class ZBatch extends SpriteBatch {
 	}
 
 	// Temp holders for faster rendering
-	private int playerImageWidth;
-	private int playerImageHeight;
-	private int playerImageHalfWidth;
-	private int playerImageHalfHeight;
+	private int entityImageWidth;
+	private int entityImageHeight;
+	private int entityImageHalfWidth;
+	private int entityImageHalfHeight;
 	public void draw(Player player) {
 		// Draw the legs
 		tmpRegion = player.getCurrentLegsFrame();
 
 		// Set image size
-		playerImageWidth = tmpRegion.getRegionWidth();
-		playerImageHeight = tmpRegion.getRegionHeight();
-		playerImageHalfWidth = playerImageWidth / 2;
-		playerImageHalfHeight = playerImageHeight / 2;
-
-		setColor(1f, 1f, 1f, 1f);
+		entityImageWidth = tmpRegion.getRegionWidth();
+		entityImageHeight = tmpRegion.getRegionHeight();
+		entityImageHalfWidth = entityImageWidth / 2;
+		entityImageHalfHeight = entityImageHeight / 2;
 
 		super.draw(		tmpRegion,
-						player.getX() - playerImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() - playerImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
-						playerImageHalfWidth, playerImageHalfHeight,
+						player.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+						entityImageHalfWidth, entityImageHalfHeight,
 						tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
 						1, 1,
 						player.getLegsPan());
@@ -67,11 +61,31 @@ public class ZBatch extends SpriteBatch {
 		// Draw the torso
 		tmpRegion = player.getCurrentTorsoFrame();
 		super.draw(		tmpRegion,
-						player.getX() - playerImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() - playerImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
-						playerImageHalfWidth, playerImageHalfHeight,
-						playerImageWidth, playerImageHeight,
+						player.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+						entityImageHalfWidth, entityImageHalfHeight,
+						entityImageWidth, entityImageHeight,
 						1, 1,
 						player.getPan());
+	}
+
+
+	// Entity rendering
+	public void draw(Entity entity) {
+		// Draw the legs
+		tmpRegion = entity.getCurrentFrame();
+
+		// Set image size
+		entityImageWidth = tmpRegion.getRegionWidth();
+		entityImageHeight = tmpRegion.getRegionHeight();
+		entityImageHalfWidth = entityImageWidth / 2;
+		entityImageHalfHeight = entityImageHeight / 2;
+
+		super.draw(		tmpRegion,
+				entity.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+				entityImageHalfWidth, entityImageHalfHeight,
+				tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
+				1, 1,
+				entity.getPan());
 	}
 
 
@@ -92,42 +106,41 @@ public class ZBatch extends SpriteBatch {
 
 	private byte[][] mapContent;
 	private float[][][] mapPositions;
-	private byte[][] mapLightmap;
 
 	// Line-Segment intersection
-	Vector2 p = new Vector2();
-	float dymcy;
-	float dxmcx;
-	float aymcy;
-	float axmcx;
-	float bxmax;
-	float bymay;
-	float r;
-	public Vector2 lineSegmentIntersection(Vector2 a, Vector2 b, Vector2 c, Vector2 d) {
-
-		dxmcx = d.x - c.x;
-		dymcy = d.y - c.y;
-		aymcy = a.y - c.y;
-		axmcx = a.x - c.x;
-		bxmax = b.x - a.x;
-		bymay = b.y - a.y;
-		r = 	(aymcy * dxmcx - axmcx * dymcy) /
-				(bxmax * dymcy - bymay * dxmcx);
-//		s = 	(aymcy * bxmax - axmcx * bymay) /
+//	Vector2 p = new Vector2();
+//	float dymcy;
+//	float dxmcx;
+//	float aymcy;
+//	float axmcx;
+//	float bxmax;
+//	float bymay;
+//	float r;
+//	public Vector2 lineSegmentIntersection(Vector2 a, Vector2 b, Vector2 c, Vector2 d) {
+//
+//		dxmcx = d.x - c.x;
+//		dymcy = d.y - c.y;
+//		aymcy = a.y - c.y;
+//		axmcx = a.x - c.x;
+//		bxmax = b.x - a.x;
+//		bymay = b.y - a.y;
+//		r = 	(aymcy * dxmcx - axmcx * dymcy) /
 //				(bxmax * dymcy - bymay * dxmcx);
-
-		if (r < 0) {
-			p.set(a);
-		}
-		else if (r < 1) {
-			p.x = a.x + r * bxmax;
-			p.y = a.y + r * bymay;
-		}
-		else {
-			p.set(b);
-		}
-		return p;
-	}
+////		s = 	(aymcy * bxmax - axmcx * bymay) /
+////				(bxmax * dymcy - bymay * dxmcx);
+//
+//		if (r < 0) {
+//			p.set(a);
+//		}
+//		else if (r < 1) {
+//			p.x = a.x + r * bxmax;
+//			p.y = a.y + r * bymay;
+//		}
+//		else {
+//			p.set(b);
+//		}
+//		return p;
+//	}
 
 
 	//TODO implement good 2D lighting and re-factor code and clean up the mess...
@@ -136,12 +149,11 @@ public class ZBatch extends SpriteBatch {
 	// http://ncase.me/sight-and-light/
 	// https://github.com/Silverwolf90/2d-visibility/blob/master/src/segmentInFrontOf.js
 	// https://legends2k.github.io/2d-fov/design.html#basic-algorithm
-	public void draw(TileMap map, Player player) {
+	public void draw(TileMap map) {
 
 		mapTileSize = map.getTileSize();
 		mapContent = map.getContent();
 		mapPositions = map.getPositions();
-		mapLightmap = map.getLightmap();
 
 		drawOffset.set(cameraOffset);
 		drawOffset.sub(screenCenterOffset);
@@ -155,8 +167,8 @@ public class ZBatch extends SpriteBatch {
 		upperBounds.x = clamp(upperBounds.x, 0, mapContent.length - 1);
 		upperBounds.y = clamp(upperBounds.y, 0, mapContent[(int)upperBounds.x].length - 1);
 
-		int centerSquareX = (int)(((upperBounds.x - lowerBounds.x) / 2) + lowerBounds.x);
-		int centerSquareY = (int)(((upperBounds.y - lowerBounds.y) / 2) + lowerBounds.y);
+//		int centerSquareX = (int)(((upperBounds.x - lowerBounds.x) / 2) + lowerBounds.x);
+//		int centerSquareY = (int)(((upperBounds.y - lowerBounds.y) / 2) + lowerBounds.y);
 
 		// Go from lower bounds in screen coordinates to upper bounds drawing each available
 		// tile on the screen.

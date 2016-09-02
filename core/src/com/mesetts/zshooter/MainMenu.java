@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -30,7 +31,7 @@ public class MainMenu implements Screen {
 // Buttons section
 // ---------------
 		startGameButton = new TextButton("Play", GUI.getGUI().getTextButtonStyle());
-		startGameButton.setSize( ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 5.5f);
+		startGameButton.setSize( ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 8f);
 		startGameButton.setPosition(ZShooter.getScreenWidth() / 2 - startGameButton.getWidth()/2, ZShooter.getScreenHeight()/4.5f);
 		startGameButton.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -52,8 +53,8 @@ public class MainMenu implements Screen {
 		stage.addActor(startGameButton);
 
 		optionsButton = new TextButton("Options", GUI.getGUI().getTextButtonStyle());
-		optionsButton.setSize(ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 5.5f);
-		optionsButton.setPosition(ZShooter.getScreenWidth() / 2 - optionsButton.getWidth()/2,0);
+		optionsButton.setSize(ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 8f);
+		optionsButton.setPosition(startGameButton.getX(), startGameButton.getY() - optionsButton.getHeight() - ZShooter.getScreenHeight() * 0.05f);
 		optionsButton.addListener(new InputListener(){
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 				Gdx.app.log("my app", "Pressed"); //** Usually used to start Game, etc. **//
@@ -104,9 +105,10 @@ public class MainMenu implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        stage.draw();
+		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        stage.draw();
 
 // On back button - Exit application
 		if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {

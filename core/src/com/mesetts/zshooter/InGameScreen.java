@@ -4,28 +4,18 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-
-import box2dLight.PointLight;
-import box2dLight.RayHandler;
-
 
 public class InGameScreen implements Screen {
 
@@ -51,6 +41,8 @@ public class InGameScreen implements Screen {
 	protected BitmapFont font;				// A blank font (default?)
 	protected StringBuilder stringBuilder;	// Text on screen
 
+	Enemy zombie;
+
 	private InGameScreen(Game game) {
 		this.game = game;
 		batch = (ZBatch)ZShooter.getBatch();
@@ -69,33 +61,40 @@ public class InGameScreen implements Screen {
 		world = new World(new Vector2(), true);
 
 
-		// Create and init Animations for the player
+		// Get legs run frames in an array
 		TextureRegion[] legsWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/legs_run_sheet_128.png")), 16, 1);
+		// Create and init animations for legs
 		Animation legsRunAnimation = new Animation(0.03125f, legsWalkFrames);
 		legsRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
+		// Get torso run frames in an array
 		TextureRegion[] torsoWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/torso_run_sheet_128.png")), 16, 1);
+		// Create and init animations for torso
 		Animation torsoRunAnimation = new Animation(0.03125f, torsoWalkFrames);
-		legsRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
+		torsoRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		// Create idle animations
+		// Create idle animations from the run frames
 		Animation legsIdleAnimation = new Animation(0.15f, legsWalkFrames);
 		legsIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
 		Animation torsoIdleAnimation = new Animation(0.15f, torsoWalkFrames);
 		torsoIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		PlayerAnimation playerAnimation = new PlayerAnimation();
-		// Add run animation
-		playerAnimation.addLegsAnimation("Run", legsRunAnimation);
-		playerAnimation.addTorsoAnimation("Run", torsoRunAnimation);
-		// Add idle animation
-		playerAnimation.addLegsAnimation("Idle", legsIdleAnimation);
-		playerAnimation.addTorsoAnimation("Idle", torsoIdleAnimation);
+
+		EntityAnimation playerLegsAnimation = new EntityAnimation();
+		playerLegsAnimation.addAnimation("Idle", legsIdleAnimation);		// Add idle animation to collection
+		playerLegsAnimation.addAnimation("Run", legsRunAnimation);			// Add run animation to collection
+
+		EntityAnimation playerTorsoAnimation = new EntityAnimation();
+		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
+		playerTorsoAnimation.addAnimation("Idle", torsoIdleAnimation);		// Add idle animation to collection
+
 
 		// Create a player and assign him the animations we created
 		player = new Player(world, ZShooter.WORLD_TILE_SIZE);
-		player.setPosition(256, 256);
-		player.setAnimation(playerAnimation);
+		player.setPosition(1, 1);
+		player.setLegsAnimation(playerLegsAnimation);						// Add the animation collection for the legs
+		player.setTorsoAnimation(playerTorsoAnimation);						// Add the animation collection for the torso
 
 		// Create a player controller (moves & updates the player through Touchpads)
 		playerController = new PlayerController(player, stage);
@@ -132,6 +131,24 @@ public class InGameScreen implements Screen {
 //// Clean up after ourselves
 //		groundBox.dispose();
 
+		zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE);
+		zombie.setPosition(3, 3);
+
+		// Get legs run frames in an array
+		TextureRegion[] zombieWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/zombie_walk_128.png")), 16, 1);
+		// Create and init animations for zombie run
+		Animation zombieRunAnimation = new Animation(0.03125f, zombieWalkFrames);
+		zombieRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		// Create idle animations from the run frames
+		Animation zombieIdleAnimation = new Animation(0.15f, zombieWalkFrames);
+		zombieIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		EntityAnimation zombieAnimation = new EntityAnimation();
+		zombieAnimation.addAnimation("Idle", zombieIdleAnimation);		// Add idle animation to collection
+		zombieAnimation.addAnimation("Run", zombieRunAnimation);			// Add run animation to collection
+
+		zombie.setAnimation(zombieAnimation);
 	}
 
 	// Splits a sprite sheet into texture regions and returns a single array of texture regions
@@ -177,7 +194,7 @@ public class InGameScreen implements Screen {
 	@Override
 	public void render(float delta) {
 
-		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 1);
+		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		//Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		//Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -188,16 +205,23 @@ public class InGameScreen implements Screen {
 		// Update the player's input forces
 		playerController.update();
 
+		zombie.body.setLinearVelocity(1.0f, 0f);
+		zombie.setPan(90);
+
 		// Camera coordinates to player coordinates
 		camera.set(player.getPosition());
+		camera.scl(ZShooter.WORLD_TILE_SIZE);
 		batch.setCameraOffset(camera);
 
         batch.begin();
 
 		// Draw map
-		batch.draw(map, player);
+		batch.draw(map);
 		// Draw player
 		batch.draw(player);
+		// Draw a zombie
+		zombie.animate("Run", delta);
+		batch.draw(zombie);
 
 		batch.end();
 
@@ -210,6 +234,7 @@ public class InGameScreen implements Screen {
 		//label.setPosition( 30, ZShooter.getScreenHeight() - 30 - ( 4 * (font.getCapHeight() + font.getLineHeight()) * label.getFontScaleY()) );
 		label.setPosition( 30, 100);
 
+		// Update stage and draw it
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
 

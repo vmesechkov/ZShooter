@@ -1,19 +1,16 @@
 package com.mesetts.zshooter;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import java.util.HashMap;
 
-public class PlayerAnimation {
+public class PlayerAnimation extends EntityAnimation {
 
 	HashMap<String,Animation> legsAnimations;
-	HashMap<String,Animation> torsoAnimations;
 
 	public PlayerAnimation() {
 		legsAnimations = new HashMap<String, Animation>();
-		torsoAnimations = new HashMap<String, Animation>();
+		animations = new HashMap<String, Animation>();
 	}
 
 	public void addLegsAnimation(final String name, Animation animation) {
@@ -25,11 +22,11 @@ public class PlayerAnimation {
 	}
 
 	public void addTorsoAnimation(final String name, Animation animation) {
-		torsoAnimations.put(name.toLowerCase(), animation);
+		animations.put(name.toLowerCase(), animation);
 	}
 
 	public Animation getTorsoAnimation(final String name) {
-		return torsoAnimations.get(name.toLowerCase());
+		return animations.get(name.toLowerCase());
 	}
 
 }

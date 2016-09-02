@@ -2,8 +2,6 @@ package com.mesetts.zshooter;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -96,11 +94,6 @@ public class PlayerController {
 		// Update player's pan
 		player.setPan(rotationKnobAngle);
 
-		// Update player's position according to his physics body
-		Vector2 bodyPos = player.body.getPosition();
-		bodyPos.scl(ZShooter.WORLD_TILE_SIZE);
-		player.setPosition(bodyPos);
-
 		// If player not touching the Touchpads
 		if (movementKnobPos.x == 0 && movementKnobPos.y == 0) {
 			// Animate the character in Idle animation
@@ -115,9 +108,6 @@ public class PlayerController {
         // Move the player
 		controllerMoveVec.set(movementKnobPos);
 		controllerMoveVec.scl(3);
-		//controllerMoveVec.add(player.getPosition());
-        //player.setPosition(controllerMoveVec);
-		//player.body.applyLinearImpulse( controllerMoveVec, player.body.getPosition(), true );
 		player.body.setLinearVelocity(controllerMoveVec);
 
 		return true;

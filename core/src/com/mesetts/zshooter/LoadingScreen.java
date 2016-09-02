@@ -6,9 +6,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 
-/**
- * Created by EpsiloN on 8/23/2016.
- */
 public class LoadingScreen implements Screen {
 
 	private static Screen loadingScreen;			// Singleton reference to loading screen object
@@ -27,6 +24,7 @@ public class LoadingScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		if (Gdx.input.isKeyPressed(Input.Keys.BACK)) {
