@@ -10,6 +10,8 @@ public class ZShooter extends Game {
 
 	private static ZBatch batch;
 	private static Viewport viewport;
+	public static float soundVolume;
+	public static float musicVolume;
 	private static Vector2 screenSize;
 	static Game game;
 	public static int WORLD_TILE_SIZE = 128;

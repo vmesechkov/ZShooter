@@ -253,4 +253,7 @@ public class InGameScreen implements Screen {
 		}
 		return inGameScreen;
 	}
+	public static boolean exists(){
+		return inGameScreen != null;
+	}
 }
