@@ -1,6 +1,7 @@
 package com.mesetts.zshooter;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -12,19 +13,23 @@ import com.badlogic.gdx.utils.Disposable;
 public class GUI implements Disposable {
 
 	private static GUI gui;			// Singleton reference to GUI object
-
+	private AssetManager assets;
 	private TextButton.TextButtonStyle textButtonStyle;
 	private BitmapFont titleFont;
 	private Slider.SliderStyle sliderStyle;
 	private Label.LabelStyle labelStyle;
 	private Label.LabelStyle titleLabelStyle;
 	private BitmapFont globalFont;
+	private TextureAtlas skinsAtlas;
 	private Skin skins; //** images are used as skins of the button **//
 
 	private GUI() {
+		assets = ZShooter.assets;
 		skins = new Skin();
-		skins.addRegions(new TextureAtlas("gdx-skins-master/Styles + Skins + Fonts/skin/star-soldier-ui.atlas")); //** skins for on and off **//
-		globalFont = new BitmapFont(Gdx.files.internal("gdx-skins-master/Styles + Skins + Fonts/skin/font-export.fnt"), false);
+		skinsAtlas = assets.get("gdx-skins-master/Styles + Skins + Fonts/skin/star-soldier-ui.atlas", TextureAtlas.class);
+		skins.addRegions(skinsAtlas); //** skins for on and off **//
+		globalFont = assets.get("gdx-skins-master/Styles + Skins + Fonts/skin/font-export.fnt", BitmapFont.class);
+
 
 		textButtonStyle = new TextButton.TextButtonStyle(); //** Button properties **//
 		textButtonStyle.up = skins.getDrawable("button");
@@ -33,8 +38,8 @@ public class GUI implements Disposable {
 		textButtonStyle.font = globalFont;
 		textButtonStyle.font.getData().setScale(4);
 
-		titleFont = new BitmapFont(Gdx.files.internal("gdx-skins-master/Styles + Skins + Fonts/skin/font-title-export.fnt"));
-		titleFont.getData().setScale(3f);
+		titleFont = assets.get("gdx-skins-master/Styles + Skins + Fonts/skin/font-title-export.fnt",BitmapFont.class);
+		titleFont.getData().setScale(1.5f);
 
 		sliderStyle = new Slider.SliderStyle();
 		sliderStyle.knob = skins.getDrawable("slider-knob");
@@ -79,5 +84,9 @@ public class GUI implements Disposable {
 
 	public Label.LabelStyle getTitleLabelStyle() {
 		return titleLabelStyle;
+	}
+
+	public BitmapFont getGlobalFont() {
+		return globalFont;
 	}
 }

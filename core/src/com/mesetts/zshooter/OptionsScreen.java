@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -21,49 +22,56 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import static com.badlogic.gdx.Gdx.files;
 
+/**
+ * Created by NoLight on 21.8.2016 г..
+ */
 public class OptionsScreen implements Screen {
 
     private static OptionsScreen optionsScreen;
 
     private Game game;
     private Stage stage;
-
     private Slider soundSlider;
     private Slider musicSlider;
     private TextButton aboutButton;
     private Label labelSound;
     private Label labelMusic;
 
-    private OptionsScreen(Game game){
+    private OptionsScreen(final Game game){
         this.game = game;
         stage = new Stage(ZShooter.getViewport(), ZShooter.getBatch());
 
         aboutButton = new TextButton("About", GUI.getGUI().getTextButtonStyle());
-        aboutButton.setHeight(ZShooter.getScreenHeight() / 8); //** Button Height **//
+        aboutButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
         aboutButton.setWidth(ZShooter.getScreenWidth() / 3); //** Button Width **//
-        aboutButton.setPosition(ZShooter.getScreenWidth() / 2 - aboutButton.getWidth()/2,ZShooter.getScreenHeight() - aboutButton.getHeight() - ZShooter.getScreenHeight() * 0.05f);
+        aboutButton.setPosition(ZShooter.getScreenWidth() / 2 - aboutButton.getWidth()/2,ZShooter.getScreenHeight()/3.8f);
+        aboutButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+               return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                game.setScreen(GameInfoScreen.getInstance(game));
+            }
+        });
         stage.addActor(aboutButton);
 
-        soundSlider = new Slider(0, 1, 0.01f, false, GUI.getGUI().getSliderStyle());
-        soundSlider.setAnimateDuration(0.0f);
+        soundSlider = new Slider(1, 3, 0.05f, false, GUI.getGUI().getSliderStyle());
+        soundSlider.setAnimateDuration(0.1f);
         soundSlider.setWidth(ZShooter.getScreenWidth()/2);
-		soundSlider.setHeight(ZShooter.getScreenHeight() / 20);
-		soundSlider.setOrigin(0, soundSlider.getHeight() / 2);
         soundSlider.setPosition(ZShooter.getScreenWidth() / 2 - soundSlider.getWidth()/2, ZShooter.getScreenHeight()/6);
-        soundSlider.getStyle().knob.setMinHeight(ZShooter.getScreenHeight() / 15);
-		soundSlider.getStyle().knob.setMinWidth(soundSlider.getStyle().knob.getMinHeight());
-		soundSlider.getStyle().knobBefore.setMinHeight(ZShooter.getScreenHeight() / 15);
-		soundSlider.getStyle().background.setMinHeight(ZShooter.getScreenHeight() / 20);
-//        soundSlider.getStyle().knob.setMinWidth(80);
-//        soundSlider.getStyle().knob.setBottomHeight(120);
-//        soundSlider.getStyle().knobBefore.setMinHeight(100);
-//        soundSlider.getStyle().knobBefore.setMinWidth(0);
+        soundSlider.getStyle().knob.setMinHeight(80);
+        soundSlider.getStyle().knob.setMinWidth(80);
+        soundSlider.getStyle().knob.setBottomHeight(120);
+        soundSlider.getStyle().knobBefore.setMinHeight(100);
+        soundSlider.getStyle().knobBefore.setMinWidth(0);
         stage.addActor(soundSlider);
 
-        musicSlider = new Slider(0, 1, 0.05f, false, GUI.getGUI().getSliderStyle());
-        musicSlider.setAnimateDuration(0.0f);
+        musicSlider = new Slider(1, 3, 0.05f, false, GUI.getGUI().getSliderStyle());
+        musicSlider.setAnimateDuration(0.1f);
         musicSlider.setWidth(ZShooter.getScreenWidth()/2);
-		musicSlider.setOrigin(0, musicSlider.getHeight() / 2);
         musicSlider.setPosition(ZShooter.getScreenWidth() / 2 - musicSlider.getWidth()/2, ZShooter.getScreenHeight()/25);
 
         stage.addActor(musicSlider);
@@ -71,13 +79,13 @@ public class OptionsScreen implements Screen {
         labelSound = new Label("Sound", GUI.getGUI().getLabelStyle());
       //labelSound.setHeight(ZShooter.getScreenHeight()/3);
         //labelSound.setWidth(ZShooter.getScreenWidth()/3);
-        labelSound.setPosition(ZShooter.getScreenWidth()/20, soundSlider.getY());
+        labelSound.setPosition(ZShooter.getScreenWidth()/20,ZShooter.getScreenHeight()/6);
         stage.addActor(labelSound);
 
         labelMusic = new Label("Music", GUI.getGUI().getLabelStyle());
         //labelMusic.setHeight(ZShooter.getScreenHeight()/3);
        // labelMusic.setWidth(ZShooter.getScreenWidth()/3);
-        labelMusic.setPosition(ZShooter.getScreenWidth()/20, musicSlider.getY());
+        labelMusic.setPosition(ZShooter.getScreenWidth()/20,ZShooter.getScreenHeight()/25);
         stage.addActor(labelMusic);
 
 
@@ -93,24 +101,19 @@ public class OptionsScreen implements Screen {
 
     @Override
     public void show() {
+
         Gdx.input.setInputProcessor(stage);
         Gdx.input.setCatchBackKey(true);
-
-		Gdx.app.log("Slider height: ", "Sound: " + soundSlider.getHeight() + ", Music: " + musicSlider.getHeight());
     }
 
 
     @Override
     public void render(float delta) {
-		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClearColor(0, 0, 0, 0.5f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        //Gdx.app.log("Changed", "" + ZShooter.soundVolume);
-        ZShooter.setSoundVolume(soundSlider.getValue());
-		ZShooter.setMusicVolume(musicSlider.getValue());
-		if (ZShooter.getMusic() != null) {
-			ZShooter.getMusic().setVolume(ZShooter.getMusicVolume());
-		}
+        Gdx.app.log("Changed", "" + ZShooter.soundVolume);
+        ZShooter.soundVolume = soundSlider.getValue();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
             game.setScreen(MainMenu.getMainMenu(game));

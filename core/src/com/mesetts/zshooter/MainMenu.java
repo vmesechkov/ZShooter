@@ -21,7 +21,7 @@ public class MainMenu implements Screen {
 	private TextButton startGameButton;
 	private TextButton optionsButton;
 	private Label gameTitle;
-
+	private boolean isGameStarted;
 	private MainMenu(final Game game) {
 		MainMenu.game = game;
 
@@ -45,8 +45,12 @@ public class MainMenu implements Screen {
 
 			}
 			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-
-				game.setScreen(InGameScreen.getInGameScreen(game));
+				if(!isGameStarted){
+					game.setScreen(IntroScreen.getInstance(game));
+				}
+					else{
+						game.setScreen(InGameScreen.getInGameScreen(game));
+				}
 			}
 		});
 		// Add button to screen stage
@@ -87,6 +91,7 @@ public class MainMenu implements Screen {
     public void show() {
 		if(InGameScreen.exists()) {
 			startGameButton.setText("Resume");
+			isGameStarted = true;
 		}
 		else{
 			startGameButton.setText("Play");
