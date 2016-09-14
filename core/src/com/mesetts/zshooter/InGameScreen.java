@@ -7,15 +7,25 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
+import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+import box2dLight.ConeLight;
+import box2dLight.DirectionalLight;
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
 
 public class InGameScreen implements Screen {
 
@@ -43,6 +53,9 @@ public class InGameScreen implements Screen {
 
 	Enemy zombie;
 
+	RayHandler rayHandler;
+	PointLight pointLight;
+
 	private InGameScreen(Game game) {
 		this.game = game;
 		batch = (ZBatch)ZShooter.getBatch();
@@ -59,35 +72,47 @@ public class InGameScreen implements Screen {
 
 		// Init Physics
 		world = new World(new Vector2(), true);
+		world.setContactListener(new ZContactListener());
 
+// Torso Frames and Texture
+		Texture torsoSheet = new Texture(Gdx.files.internal("data/torso_sheet_128.png"));
+		TextureRegion[][] torsoFrames = TextureRegion.split(torsoSheet, torsoSheet.getWidth() / 16, torsoSheet.getHeight() / 6);
 
-		// Get legs run frames in an array
-		TextureRegion[] legsWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/legs_run_sheet_128.png")), 16, 1);
-		// Create and init animations for legs
-		Animation legsRunAnimation = new Animation(0.03125f, legsWalkFrames);
-		legsRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
-
-		// Get torso run frames in an array
-		TextureRegion[] torsoWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/torso_run_sheet_128.png")), 16, 1);
-		// Create and init animations for torso
-		Animation torsoRunAnimation = new Animation(0.03125f, torsoWalkFrames);
-		torsoRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
-
-		// Create idle animations from the run frames
-		Animation legsIdleAnimation = new Animation(0.15f, legsWalkFrames);
-		legsIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
-
-		Animation torsoIdleAnimation = new Animation(0.15f, torsoWalkFrames);
+		Animation torsoIdleAnimation = new Animation(0.15f, torsoFrames[0]);
 		torsoIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
+		Animation torsoRunAnimation = new Animation(0.0625f, torsoFrames[1]);
+		torsoRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
+		Animation torsoShootAnimation = new Animation(0.0625f, torsoFrames[0]);
+		torsoShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation torsoRunShootAnimation = new Animation(0.0625f, torsoFrames[2]);
+		torsoRunShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+// Legs Frames and Texture
+		Texture legsSheet = new Texture(Gdx.files.internal("data/legs_sheet_128.png"));
+		TextureRegion[][] legsFrames = TextureRegion.split(legsSheet, legsSheet.getWidth() / 16, legsSheet.getHeight() / 5);
+
+		Animation legsIdleAnimation = new Animation(0.15f, legsFrames[0]);
+		legsIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation legsRunAnimation = new Animation(0.0625f, legsFrames[1]);
+		legsRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation legsBackRunAnimation = new Animation(0.0625f, legsFrames[4]);
+		legsBackRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
+/////////////////////////////
 		EntityAnimation playerLegsAnimation = new EntityAnimation();
 		playerLegsAnimation.addAnimation("Idle", legsIdleAnimation);		// Add idle animation to collection
 		playerLegsAnimation.addAnimation("Run", legsRunAnimation);			// Add run animation to collection
+		playerLegsAnimation.addAnimation("BackRun", legsBackRunAnimation);	// Add backwards running animation to collection
 
 		EntityAnimation playerTorsoAnimation = new EntityAnimation();
-		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
 		playerTorsoAnimation.addAnimation("Idle", torsoIdleAnimation);		// Add idle animation to collection
+		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
+		playerTorsoAnimation.addAnimation("Shoot", torsoShootAnimation);		// Add idle animation to collection
+		playerTorsoAnimation.addAnimation("RunShoot", torsoRunShootAnimation);		// Add idle animation to collection
 
 
 		// Create a player and assign him the animations we created
@@ -131,25 +156,75 @@ public class InGameScreen implements Screen {
 //// Clean up after ourselves
 //		groundBox.dispose();
 
-		zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE);
-		zombie.setPosition(3, 3);
+		// Get frames in an array from the texture
+		Texture zombieSheet = new Texture(Gdx.files.internal("data/zombie_sheet_128.png"));
+		TextureRegion[][] zombieFrames = TextureRegion.split(zombieSheet, zombieSheet.getWidth() / 16, zombieSheet.getHeight() / 6);
 
-		// Get legs run frames in an array
-		TextureRegion[] zombieWalkFrames = arrangeFrames(new Texture(Gdx.files.internal("data/zombie_walk_128.png")), 16, 1);
 		// Create and init animations for zombie run
-		Animation zombieRunAnimation = new Animation(0.03125f, zombieWalkFrames);
+		Animation zombieRunAnimation = new Animation(0.0625f, zombieFrames[3]);
 		zombieRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		// Create idle animations from the run frames
-		Animation zombieIdleAnimation = new Animation(0.15f, zombieWalkFrames);
-		zombieIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
+		// Create idle animations
+		Animation zombieIdle1Animation = new Animation(0.15f, zombieFrames[0]);
+		zombieIdle1Animation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation zombieIdle2Animation = new Animation(0.093f, zombieFrames[1]);
+		zombieIdle2Animation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation zombieIdle3Animation = new Animation(0.15f, zombieFrames[2]);
+		zombieIdle3Animation.setPlayMode(Animation.PlayMode.LOOP);
+
+		// Create attack animation
+		Animation zombieAttackAnimation = new Animation(0.06f, zombieFrames[4]);
+		zombieAttackAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		// Create die animation
+		Animation zombieDieAnimation = new Animation(0.04f, zombieFrames[5]);
+		zombieDieAnimation.setPlayMode(Animation.PlayMode.NORMAL);
 
 		EntityAnimation zombieAnimation = new EntityAnimation();
-		zombieAnimation.addAnimation("Idle", zombieIdleAnimation);		// Add idle animation to collection
+		zombieAnimation.addAnimation("Idle1", zombieIdle1Animation);		// Add idle animation to collection
+		zombieAnimation.addAnimation("Idle2", zombieIdle2Animation);
+		zombieAnimation.addAnimation("Idle3", zombieIdle3Animation);
 		zombieAnimation.addAnimation("Run", zombieRunAnimation);			// Add run animation to collection
+		zombieAnimation.addAnimation("Attack", zombieAttackAnimation);
+		zombieAnimation.addAnimation("Die", zombieDieAnimation);
 
-		zombie.setAnimation(zombieAnimation);
+		// Pass the zombie tile coordinates (3,3) to the constructor
+//		zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE, map, player, 3, 5);
+//		zombie.setHealth(100);
+//		zombie.setAnimation(zombieAnimation);
+
+		zombies = new ArrayList<Enemy>();
+
+		Random r = new Random();
+		for (int i = 0; i < 50; i++) {
+			// Pass the zombie tile coordinates (3,3) to the constructor
+			zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE, map, player, r.nextInt(50), r.nextInt(50));
+			zombie.setHealth(100);
+			zombie.setAnimation(zombieAnimation);
+			zombies.add(zombie);
+		}
+
+		rayHandler = new RayHandler(world);
+		rayHandler.setAmbientLight(0.02f, 0.03f, 0.24f, 0.06f);
+
+		// Use STRONG Colors with low alpha, so stacking lights does'nt blind the user...
+		light = new ConeLight(rayHandler, 128, new Color(1,1,1,0.65f), 20, 0, 0, 0, 45);
+		light.attachToBody(player.body, 0, 0f, -90f);
+		light.setIgnoreAttachedBody(true);
+		light.setSoftnessLength(1.5f);
+		light.setContactFilter((short)0x0001,(short)0x0, (short)0x0001);
+
+		// Use STRONG Colors with low alpha, so stacking lights does'nt blind the user...
+		PointLight light2 = new PointLight(rayHandler, 256, new Color(1,0.7f,0.3f,0.65f), 10, 25.5f, 25.5f);
+		light2.setContactFilter((short)0x0001,(short)0x0, (short)0x0001);
 	}
+
+	ConeLight light;
+	OrthographicCamera cam = new OrthographicCamera(ZShooter.getViewport().getWorldWidth() / ZShooter.WORLD_TILE_SIZE, ZShooter.getViewport().getWorldHeight() / ZShooter.WORLD_TILE_SIZE);
+
+	ArrayList<Enemy> zombies;
 
 	// Splits a sprite sheet into texture regions and returns a single array of texture regions
 	private TextureRegion[] arrangeFrames(final Texture sheet, final int cols, final int rows) {
@@ -205,8 +280,10 @@ public class InGameScreen implements Screen {
 		// Update the player's input forces
 		playerController.update();
 
-		zombie.body.setLinearVelocity(1.0f, 0f);
-		zombie.setPan(90);
+		for (Enemy z: zombies) {
+			z.update(delta);
+		}
+		//zombie.update(delta);
 
 		// Camera coordinates to player coordinates
 		camera.set(player.getPosition());
@@ -217,12 +294,27 @@ public class InGameScreen implements Screen {
 
 		// Draw map
 		batch.draw(map);
-		// Draw player
-		batch.draw(player);
+
 		// Draw a zombie
-		zombie.animate("Run", delta);
+		for (Enemy z: zombies) {
+			batch.draw(z);
+		}
 		batch.draw(zombie);
 
+		batch.end();
+
+		//light.setDirection(player.getPan() - 90f);
+		//light.update();
+
+		cam.position.set(player.getX(), player.getY(), 0);
+		//cam.position.scl(ZShooter.WORLD_TILE_SIZE);
+		cam.update();
+		rayHandler.setCombinedMatrix(cam.combined, 0, 0, ZShooter.getScreenWidth(), ZShooter.getScreenHeight());
+		rayHandler.updateAndRender();
+
+		batch.begin();
+		// Draw player
+		batch.draw(player);
 		batch.end();
 
 // Debugging:
@@ -267,6 +359,8 @@ public class InGameScreen implements Screen {
 	public void dispose() {
 		map.dispose();
 		playerController.dispose();
+
+		rayHandler.dispose();
 
 		// Singleton destroy
 		inGameScreen = null;

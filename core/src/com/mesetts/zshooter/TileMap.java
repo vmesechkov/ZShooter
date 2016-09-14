@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
@@ -159,9 +162,16 @@ public class TileMap {
 
 // Create a body from the defintion and add it to the world
 		Body groundBody = world.createBody(groundBodyDef);
+		groundBody.setUserData(this);
 
 		Vector2 tilePosition = new Vector2();
 		PolygonShape groundBox = new PolygonShape();
+
+		Fixture fixture;
+
+		Filter filter = new Filter();
+		filter.categoryBits = 0x0001;
+		filter.maskBits = 0x0001 | 0x0002;
 
 // Update the street's collidable tiles
 		for (int i = 0; i < content.length; i++) {
@@ -172,7 +182,9 @@ public class TileMap {
 
 					groundBox.setAsBox(0.5f, 0.5f, tilePosition, 0 );
 
-					groundBody.createFixture(groundBox, 0.0f);
+					fixture = groundBody.createFixture(groundBox, 0.0f);
+					fixture.setFilterData(filter);
+					fixture.setUserData(this);
 				}
 				else {
 					collidable[i][j] = 0;
@@ -180,6 +192,12 @@ public class TileMap {
 			}
 		}
 		groundBox.dispose();
+	}
+
+	public boolean nodeIsWalkable(int nodeIndex) {
+		int nodeX = nodeIndex % content.length;
+		int nodeY = nodeIndex / content.length;
+		return collidable[nodeX][nodeY] == 0;
 	}
 
 	public void dispose() {

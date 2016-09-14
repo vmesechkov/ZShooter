@@ -31,7 +31,7 @@ public class MainMenu implements Screen {
 // Buttons section
 // ---------------
 		startGameButton = new TextButton("Play", GUI.getGUI().getTextButtonStyle());
-		startGameButton.setSize( ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 8f);
+		startGameButton.setSize( ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 6f);
 		startGameButton.setPosition(ZShooter.getScreenWidth() / 2 - startGameButton.getWidth()/2, ZShooter.getScreenHeight()/4.5f);
 		startGameButton.addListener(new InputListener() {
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -57,7 +57,7 @@ public class MainMenu implements Screen {
 		stage.addActor(startGameButton);
 
 		optionsButton = new TextButton("Options", GUI.getGUI().getTextButtonStyle());
-		optionsButton.setSize(ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 8f);
+		optionsButton.setSize(ZShooter.getScreenWidth() / 3f, ZShooter.getScreenHeight() / 6f);
 		optionsButton.setPosition(startGameButton.getX(), startGameButton.getY() - optionsButton.getHeight() - ZShooter.getScreenHeight() * 0.05f);
 		optionsButton.addListener(new InputListener(){
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {

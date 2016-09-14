@@ -21,8 +21,11 @@ public class Entity {
 	protected Vector2 position;
 	protected float pan;
 
+	protected float health;
+
 	// Physics body object of this entity registered in the physics world
 	protected Body body;
+	protected World world;
 
 // EntityAnimation is a custom class representing a map of
 // Animation objects containing references to TextureRegions
@@ -39,6 +42,7 @@ public class Entity {
 
 	// Default constructor
 	public Entity(final World world, final int tileSize, CollisionShape collisionShape) {
+		this.world = world;
 
 		this.tileSize = tileSize;
 
@@ -65,11 +69,14 @@ public class Entity {
 		}
 
 		fixtureDef.shape = shape;
-		fixtureDef.density = 0.5f;
-		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.6f;
+		fixtureDef.density = 1062f;
+		fixtureDef.friction = 1f;
+		fixtureDef.restitution = 0.0f;
+		fixtureDef.filter.categoryBits = 0x0001;
+		fixtureDef.filter.maskBits = 0x0001 | 0x0002;
 
-		body.createFixture(fixtureDef);				// Create the fixture to the body from the fixture definition
+		Fixture fixture = body.createFixture(fixtureDef);				// Create the fixture to the body from the fixture definition
+		fixture.setUserData(this);
 		body.setUserData(this);						// Set a reference back to this object from the physical body
 
 		shape.dispose();							// Get rid of the shape
@@ -95,29 +102,58 @@ public class Entity {
 
 // Position setters and getter
 	public void setPosition(Vector2 position) {
-		body.setTransform(position.x, position.y, body.getAngle());
+		if (body != null) {
+			body.setTransform(position.x, position.y, body.getAngle());
+		}
+		this.position.set(position);
 	}
 
 	public void setPosition(int x, int y) {
-		body.setTransform(x, y, body.getAngle());
+		if (body != null) {
+			body.setTransform(x, y, body.getAngle());
+		}
+		position.set(x, y);
 	}
 
-	public Vector2 getPosition() { return body.getPosition(); }
+	public Vector2 getPosition() {
+		if (body != null) {
+			return body.getPosition();
+		}
+		else {
+			return position;
+		}
+	}
 
-	public float getX() { return body.getPosition().x; }
+	public float getX() {
+		if (body != null) {
+			return body.getPosition().x;
+		}
+		else {
+			return position.x;
+		}
+	}
 
 	public float getY() {
-		return body.getPosition().y;
+		if (body != null) {
+			return body.getPosition().y;
+		}
+		else {
+			return position.y;
+		}
 	}
 
 // Pan setter and getter
 	public void setPan(float pan) {
 		pan %= 360;
 		body.setTransform(body.getPosition(), (float)Math.toRadians(pan));
+		this.pan = pan;
 	}
 
 	public float getPan() {
-		return (float)Math.toDegrees(body.getAngle());
+		if (body != null) {
+			pan = (float) Math.toDegrees(body.getAngle());
+		}
+		return pan;
 	}
 
 	public void setBodyToBox(float width, float height) {
@@ -158,5 +194,13 @@ public class Entity {
 
 		body.createFixture(fixtureDef);				// Create the fixture to the body from the fixture definition
 		circle.dispose();
+	}
+
+	public void setHealth(float health) {
+		this.health = health;
+	}
+
+	public float getHealth() {
+		return health;
 	}
 }

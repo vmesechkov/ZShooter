@@ -64,6 +64,7 @@ public class PlayerController {
 		return (float) (Math.toDegrees(Math.atan2(knobPos.y , knobPos.x)));
 	}
 
+	float knobAngleDifference;
 	public boolean update() {
 		movementKnobPos.x = movementTouchpad.getKnobPercentX();
 		movementKnobPos.y = movementTouchpad.getKnobPercentY();
@@ -72,43 +73,59 @@ public class PlayerController {
 		rotationKnobPos.y = rotationTouchpad.getKnobPercentY();
 
 		// Rotate the legs
-		if (movementKnobPos.x != 0) {
+		if (movementKnobPos.x != 0 || movementKnobPos.y != 0) {
 			movementKnobAngle = 90.0f + calculateAngleOfKnob(movementKnobPos);
+
+			// If we're here, the player isnt standing, so animate him in Run animation
+			player.animateLegs("Run", Gdx.app.getGraphics().getDeltaTime());
+
+			// Move the player
+			controllerMoveVec.set(movementKnobPos);
+			controllerMoveVec.scl(3);
+			player.body.setLinearVelocity(controllerMoveVec);
 		}
 		else {
-			if (movementKnobPos.y == 0) {
-				movementKnobAngle = rotationKnobAngle;
-			}
+			movementKnobAngle = rotationKnobAngle;
+			player.body.setLinearVelocity(0,0);
+
+			player.animateLegs("Idle", Gdx.app.getGraphics().getDeltaTime());
 		}
 		player.setLegsPan(movementKnobAngle);
 
 		// Rotate the torso
-		if (rotationKnobPos.x != 0) {
+		if (rotationKnobPos.x != 0 || rotationKnobPos.y != 0) {
 			rotationKnobAngle = 90.0f + calculateAngleOfKnob(rotationKnobPos);
+
+			if (movementKnobPos.x != 0 || movementKnobPos.y != 0) {
+				knobAngleDifference = rotationKnobAngle - movementKnobAngle;
+				if (knobAngleDifference > 90) {
+					movementKnobAngle += 180;
+				}
+				if (knobAngleDifference < -90) {
+					movementKnobAngle -= 180;
+				}
+				movementKnobAngle %= 360;
+				player.animateLegs("BackRun", Gdx.app.getGraphics().getDeltaTime());
+				player.animateTorso("RunShoot", Gdx.app.getGraphics().getDeltaTime());
+			}
+			else {
+				player.animateTorso("Shoot", Gdx.app.getGraphics().getDeltaTime());
+			}
+
+			player.fire(rotationKnobPos.x, rotationKnobPos.y, Gdx.app.getGraphics().getDeltaTime());
 		}
 		else {
-			if (rotationKnobPos.y == 0) {
-				rotationKnobAngle = movementKnobAngle;
+			rotationKnobAngle = movementKnobAngle;
+			if (movementKnobPos.x == 0 && movementKnobPos.y == 0) {
+				player.animateTorso("Idle", Gdx.app.getGraphics().getDeltaTime());
+			}
+			else {
+				player.animateTorso("Run", Gdx.app.getGraphics().getDeltaTime());
 			}
 		}
 		// Update player's pan
+		player.setLegsPan(movementKnobAngle);
 		player.setPan(rotationKnobAngle);
-
-		// If player not touching the Touchpads
-		if (movementKnobPos.x == 0 && movementKnobPos.y == 0) {
-			// Animate the character in Idle animation
-			player.animate("Idle", Gdx.app.getGraphics().getDeltaTime());
-			// Reset his velocity to 0
-			player.body.setLinearVelocity(0,0);
-			return false;
-		}
-		// If we're here, the player isnt standing, so animate him in Run animation
-		player.animate("Run", Gdx.app.getGraphics().getDeltaTime());
-
-        // Move the player
-		controllerMoveVec.set(movementKnobPos);
-		controllerMoveVec.scl(3);
-		player.body.setLinearVelocity(controllerMoveVec);
 
 		return true;
 	}

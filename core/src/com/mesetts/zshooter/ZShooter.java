@@ -38,7 +38,7 @@ public class ZShooter extends Game {
 	}
 
 	static int getScreenHeight() {
-		return (int)screenSize.x;
+		return (int)screenSize.y;
 	}
 
 	static Viewport getViewport() {

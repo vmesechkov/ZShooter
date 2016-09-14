@@ -1,11 +1,21 @@
 package com.mesetts.zshooter;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.World;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Player extends Entity {
 
 	private float legsPan;
+	private World world;
+
+	private float runSpeed;
+	private float walkSpeed;
 
 // PlayerAnimation is a custom class representing two maps to different
 // Animation objects containing references to TextureRegions
@@ -19,6 +29,10 @@ public class Player extends Entity {
 
 	public Player(World world, int tileSize) {
 		super(world, tileSize, CollisionShape.CIRCLE);
+		this.world = world;
+
+
+		bulletRegion = TextureRegion.split(bulletTexture, 4, 4)[0][0];
 	}
 
 // Called when you want to change the current frames of the player...
@@ -27,8 +41,15 @@ public class Player extends Entity {
 	@Override
 	public void animate(String animationName, float deltaTime) {
 		stateTime += deltaTime;
-		currentLegsFrame = legsAnimation.getAnimation(animationName).getKeyFrame(stateTime);
 		currentFrame = animation.getAnimation(animationName).getKeyFrame(stateTime);
+	}
+
+	public void animateLegs(String animationName, float deltaTime) {
+		currentLegsFrame = legsAnimation.getAnimation(animationName).getKeyFrame(stateTime);
+	}
+
+	public void animateTorso(String animationName, float deltaTime) {
+		animate(animationName, deltaTime);
 	}
 
 // -------------------
@@ -70,4 +91,32 @@ public class Player extends Entity {
 
 	public float getLegsPan() {	return legsPan; }
 
+
+	public ArrayList<Projectile> bullets = new ArrayList<Projectile>();
+	Projectile bullet;
+
+	Texture bulletTexture = new Texture(Gdx.files.internal("data/bullet.png"));
+	TextureRegion bulletRegion;
+
+	float x,y;
+	float fireStateTime;
+	public void fire(float velX, float velY, float delta) {
+		fireStateTime += delta;
+		if (fireStateTime > 0.033f) {
+			bullet = new Projectile(world);
+			x = (float) (body.getPosition().x + 0.4 * MathUtils.cosDeg(this.getPan() - 90f + ((float)Math.random() * 30f - 15f)));
+			y = (float) (body.getPosition().y + 0.4 * MathUtils.sinDeg(this.getPan() - 90f + ((float)Math.random() * 30f - 15f)));
+			bullet.getBody().setTransform(x, y, (float) Math.toRadians(this.getPan()));
+			bullet.speed.set(velX, velY);
+			bullet.speed.nor();
+			bullet.speed.scl(10);
+			bullet.getBody().setLinearVelocity(bullet.speed);
+			bullet.getInitialPosition().set(body.getPosition());
+			bullet.setDamage(10);
+			bullets.add(bullet);
+			fireStateTime = 0;
+			//Gdx.app.log("Player: ", "This pan: " + this.getPan());
+		}
+		Gdx.app.log("Player: ", "Bullet count: " + bullets.size());
+	}
 }

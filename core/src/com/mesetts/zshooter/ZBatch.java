@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Iterator;
+
 public class ZBatch extends SpriteBatch {
 
 	private TextureRegion tmpRegion;
@@ -66,6 +68,21 @@ public class ZBatch extends SpriteBatch {
 						entityImageWidth, entityImageHeight,
 						1, 1,
 						player.getPan());
+
+		tmpRegion = player.bulletRegion;
+		Projectile p;
+		for (Iterator<Projectile> it = player.bullets.iterator(); it.hasNext(); ) {
+			p = it.next();
+			if (p != null) {
+				super.draw(tmpRegion,
+						p.getBody().getPosition().x * 128 - 4 - cameraOffset.x + screenCenterOffset.x, p.getBody().getPosition().y * 128 - 4 - cameraOffset.y + screenCenterOffset.y,
+						4, 4,
+						8, 8,
+						1, 1,
+						p.getBody().getAngle());
+				p.update(player, it);
+			}
+		}
 	}
 
 
@@ -74,18 +91,20 @@ public class ZBatch extends SpriteBatch {
 		// Draw the legs
 		tmpRegion = entity.getCurrentFrame();
 
-		// Set image size
-		entityImageWidth = tmpRegion.getRegionWidth();
-		entityImageHeight = tmpRegion.getRegionHeight();
-		entityImageHalfWidth = entityImageWidth / 2;
-		entityImageHalfHeight = entityImageHeight / 2;
+		if (tmpRegion != null) {
+			// Set image size
+			entityImageWidth = tmpRegion.getRegionWidth();
+			entityImageHeight = tmpRegion.getRegionHeight();
+			entityImageHalfWidth = entityImageWidth / 2;
+			entityImageHalfHeight = entityImageHeight / 2;
 
-		super.draw(		tmpRegion,
-				entity.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
-				entityImageHalfWidth, entityImageHalfHeight,
-				tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
-				1, 1,
-				entity.getPan());
+			super.draw(tmpRegion,
+					entity.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+					entityImageHalfWidth, entityImageHalfHeight,
+					tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
+					1, 1,
+					entity.getPan());
+		}
 	}
 
 
