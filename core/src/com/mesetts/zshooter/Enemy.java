@@ -94,6 +94,8 @@ public class Enemy extends Entity {
 
 	float idleTime;
 	float idleTargetTime;
+	float attackTime;
+	boolean enemyHit;
 
 	boolean iSeePlayer;
 
@@ -234,17 +236,52 @@ public class Enemy extends Entity {
 
 			// If we see the player, chase
 			if (iSeePlayer) {
-				animate("Run", deltaTime);
-				moveVec.set(enemy.body.getPosition().x - body.getPosition().x, enemy.body.getPosition().y - body.getPosition().y);
-				moveVec.nor();
-				body.setLinearVelocity(moveVec);
-				setPan(90.0f + (float) (Math.toDegrees(Math.atan2(moveVec.y , moveVec.x))));
+				if (body.getPosition().dst(enemy.body.getPosition()) > 0.6) {
+					animate("Run", deltaTime);
+					moveVec.set(enemy.body.getPosition().x - body.getPosition().x, enemy.body.getPosition().y - body.getPosition().y);
+					moveVec.nor();
+					body.setLinearVelocity(moveVec);
+					setPan(90.0f + (float) (Math.toDegrees(Math.atan2(moveVec.y, moveVec.x))));
+				}
+				else {
+					state = State.ATTACK;
+					update(deltaTime);
+					return;
+				}
 			}
 			else {
 				// Else, stay put
 				enemy = null;
 				state = State.IDLE;
 			}
+		}
+
+
+		if (state == State.ATTACK) {
+			if (enemy != null) {
+				if (body.getPosition().dst(enemy.body.getPosition()) <= 0.6) {
+					animate("Attack", deltaTime);
+					attackTime += deltaTime;
+					if (attackTime > 0.4 && !enemyHit) {
+						enemyHit = true;
+						enemy.health -= 10;
+					}
+					if (attackTime >= 0.6) {
+						enemyHit = false;
+					}
+				}
+				else {
+					state = State.CHASE;
+					update(deltaTime);
+					return;
+				}
+			}
+			else {
+				state = State.IDLE;
+				update(deltaTime);
+				return;
+			}
+			return;
 		}
 	}
 
@@ -358,11 +395,16 @@ public class Enemy extends Entity {
 
 			// If we still have an enemy, we're seeing him...Chase!
 			if (enemy != null) {
-				animate("Run", deltaTime);
-				moveVec.set(enemy.body.getPosition().x - body.getPosition().x, enemy.body.getPosition().y - body.getPosition().y);
-				moveVec.nor();
-				body.setLinearVelocity(moveVec);
-				setPan(90.0f + (float) (Math.toDegrees(Math.atan2(moveVec.y , moveVec.x))));
+				if (body.getPosition().dst(enemy.body.getPosition()) > 0.6) {
+					animate("Run", deltaTime);
+					moveVec.set(enemy.body.getPosition().x - body.getPosition().x, enemy.body.getPosition().y - body.getPosition().y);
+					moveVec.nor();
+					body.setLinearVelocity(moveVec);
+					setPan(90.0f + (float) (Math.toDegrees(Math.atan2(moveVec.y, moveVec.x))));
+				}
+				else {
+					state = State.ATTACK;
+				}
 			}
 			else {
 				state = State.IDLE;

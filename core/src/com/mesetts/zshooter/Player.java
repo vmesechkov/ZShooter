@@ -44,6 +44,7 @@ public class Player extends Entity {
 		currentFrame = animation.getAnimation(animationName).getKeyFrame(stateTime);
 	}
 
+	//TODO two separate StateTimes for Legs and Torso
 	public void animateLegs(String animationName, float deltaTime) {
 		currentLegsFrame = legsAnimation.getAnimation(animationName).getKeyFrame(stateTime);
 	}
@@ -100,8 +101,20 @@ public class Player extends Entity {
 
 	float x,y;
 	float fireStateTime;
+	int bulletsLeft = 30;
+
 	public void fire(float velX, float velY, float delta) {
 		fireStateTime += delta;
+		if (bulletsLeft <= 0) {
+			if (fireStateTime < 2) {
+				animateTorso("Reload", delta);
+				return;
+			}
+			fireStateTime = 0;
+			bulletsLeft = 30;
+			return;
+		}
+
 		if (fireStateTime > 0.033f) {
 			bullet = new Projectile(world);
 			x = (float) (body.getPosition().x + 0.4 * MathUtils.cosDeg(this.getPan() - 90f + ((float)Math.random() * 30f - 15f)));
@@ -115,8 +128,16 @@ public class Player extends Entity {
 			bullet.setDamage(10);
 			bullets.add(bullet);
 			fireStateTime = 0;
+
+			bulletsLeft -= 1;
 			//Gdx.app.log("Player: ", "This pan: " + this.getPan());
 		}
 		Gdx.app.log("Player: ", "Bullet count: " + bullets.size());
+	}
+
+
+	boolean isReloading;
+	public void reload() {
+
 	}
 }

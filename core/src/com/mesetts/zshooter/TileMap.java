@@ -19,6 +19,9 @@ public class TileMap {
 	private TextureRegion[][] textures;
 	private Texture textureSheet;
 
+	private World world;
+	private Body tileMapBody;
+
 	private byte[][] content;
 	private float[][][] positions;
     private byte[][] collidable;
@@ -49,11 +52,12 @@ public class TileMap {
 		return textures[x][y];
 	}
 
-	public TileMap(final int width, final int height, final int tileSize, World world) {
+	public TileMap(Texture textureSheet, final int width, final int height, final int tileSize, World world) {
+		this.world = world;
 
 		this.tileSize = tileSize;
 
-		textureSheet = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+		this.textureSheet = textureSheet;
 		textures = TextureRegion.split(textureSheet, tileSize, tileSize);
 
 		// Initialize our content, collidable tiles and positions
@@ -62,17 +66,64 @@ public class TileMap {
         collidable = new byte[width][height];
 		lightmap = new byte[width][height];
 		floatFromByte = new float[256];
+	}
 
+	public void generateBody() {
+		// If a body exists, destroy it.
+		if (tileMapBody != null) {
+			world.destroyBody(tileMapBody);
+		}
+
+		// Create our body definition
+		BodyDef groundBodyDef = new BodyDef();
+// Set its world position
+		groundBodyDef.position.set(new Vector2());
+
+// Create a body from the defintion and add it to the world
+		tileMapBody = world.createBody(groundBodyDef);
+		tileMapBody.setUserData(this);
+
+		Vector2 tilePosition = new Vector2();
+		PolygonShape groundBox = new PolygonShape();
+
+		Fixture fixture;
+
+		Filter filter = new Filter();
+		filter.categoryBits = 0x0001;
+		filter.maskBits = 0x0001 | 0x0002;
+
+// Update the street's collidable tiles
+		for (int i = 0; i < content.length; i++) {
+			for (int j = 0; j < content[i].length; j++) {
+				if (content[i][j] == 0) {
+					collidable[i][j] = 1;
+					tilePosition.set(i + 0.5f,j + 0.5f);
+
+					groundBox.setAsBox(0.5f, 0.5f, tilePosition, 0 );
+
+					fixture = tileMapBody.createFixture(groundBox, 0.0f);
+					fixture.setFilterData(filter);
+					fixture.setUserData(this);
+				}
+				else {
+					collidable[i][j] = 0;
+				}
+			}
+		}
+		groundBox.dispose();
+	}
+
+	public void generateRandomMap() {
 		// Build a random map, setting each tile's content to a random texture from our atlas
 		// and pre-calculating our tile positions to save the multiplication when rendering
 		Random r = new Random();
-		for(int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                content[i][j] = (byte)r.nextInt(6);
-                positions[i][j][0] = i * tileSize;
-                positions[i][j][1] = j * tileSize;
-            }
-        }
+		for(int i = 0; i < content.length; i++) {
+			for (int j = 0; j < content[0].length; j++) {
+				content[i][j] = (byte)r.nextInt(textures.length * textures[0].length);
+				positions[i][j][0] = i * tileSize;
+				positions[i][j][1] = j * tileSize;
+			}
+		}
 
 		for (int i = floatFromByte.length - 1, j = 1; i > 0; i--, j++) {
 			floatFromByte[j] = 1 / i;
@@ -153,45 +204,10 @@ public class TileMap {
 		content[4][8] = 2;
 		content[5][8] = 2;
 		content[6][8] = 2;
+	}
 
-
-		// Create our body definition
-		BodyDef groundBodyDef = new BodyDef();
-// Set its world position
-		groundBodyDef.position.set(new Vector2());
-
-// Create a body from the defintion and add it to the world
-		Body groundBody = world.createBody(groundBodyDef);
-		groundBody.setUserData(this);
-
-		Vector2 tilePosition = new Vector2();
-		PolygonShape groundBox = new PolygonShape();
-
-		Fixture fixture;
-
-		Filter filter = new Filter();
-		filter.categoryBits = 0x0001;
-		filter.maskBits = 0x0001 | 0x0002;
-
-// Update the street's collidable tiles
-		for (int i = 0; i < content.length; i++) {
-			for (int j = 0; j < content[i].length; j++) {
-				if (content[i][j] == 0) {
-					collidable[i][j] = 1;
-					tilePosition.set(i + 0.5f,j + 0.5f);
-
-					groundBox.setAsBox(0.5f, 0.5f, tilePosition, 0 );
-
-					fixture = groundBody.createFixture(groundBox, 0.0f);
-					fixture.setFilterData(filter);
-					fixture.setUserData(this);
-				}
-				else {
-					collidable[i][j] = 0;
-				}
-			}
-		}
-		groundBox.dispose();
+	public void setTile(int tileX, int tileY, byte tileType) {
+		content[tileX][tileY] = tileType;
 	}
 
 	public boolean nodeIsWalkable(int nodeIndex) {
@@ -203,4 +219,6 @@ public class TileMap {
 	public void dispose() {
 		textureSheet.dispose();
 	}
+
+
 }

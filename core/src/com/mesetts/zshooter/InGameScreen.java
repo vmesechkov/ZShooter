@@ -76,43 +76,64 @@ public class InGameScreen implements Screen {
 
 // Torso Frames and Texture
 		Texture torsoSheet = new Texture(Gdx.files.internal("data/torso_sheet_128.png"));
-		TextureRegion[][] torsoFrames = TextureRegion.split(torsoSheet, torsoSheet.getWidth() / 16, torsoSheet.getHeight() / 6);
+		TextureRegion[][] torsoFrames = TextureRegion.split(torsoSheet, torsoSheet.getWidth() / 16, torsoSheet.getHeight() / 8);
 
 		Animation torsoIdleAnimation = new Animation(0.15f, torsoFrames[0]);
 		torsoIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		Animation torsoRunAnimation = new Animation(0.0625f, torsoFrames[1]);
+		Animation torsoRunAnimation = new Animation(0.05f, torsoFrames[1]);
 		torsoRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		Animation torsoShootAnimation = new Animation(0.0625f, torsoFrames[0]);
+		Animation torsoShootAnimation = new Animation(0.05f, torsoFrames[0]);
 		torsoShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		Animation torsoRunShootAnimation = new Animation(0.0625f, torsoFrames[2]);
+		Animation torsoRunShootAnimation = new Animation(0.05f, torsoFrames[2]);
 		torsoRunShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation torsoReloadAnimation = new Animation(0.125f, torsoFrames[4]);
+		torsoReloadAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation torsoWalkAnimation = new Animation(0.125f, torsoFrames[6]);
+		torsoWalkAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation torsoWalkShootAnimation = new Animation(0.125f, torsoFrames[7]);
+		torsoWalkShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
 // Legs Frames and Texture
 		Texture legsSheet = new Texture(Gdx.files.internal("data/legs_sheet_128.png"));
-		TextureRegion[][] legsFrames = TextureRegion.split(legsSheet, legsSheet.getWidth() / 16, legsSheet.getHeight() / 5);
+		TextureRegion[][] legsFrames = TextureRegion.split(legsSheet, legsSheet.getWidth() / 16, legsSheet.getHeight() / 7);
 
 		Animation legsIdleAnimation = new Animation(0.15f, legsFrames[0]);
 		legsIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		Animation legsRunAnimation = new Animation(0.0625f, legsFrames[1]);
+		Animation legsRunAnimation = new Animation(0.05f, legsFrames[1]);
 		legsRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-		Animation legsBackRunAnimation = new Animation(0.0625f, legsFrames[4]);
+		Animation legsBackRunAnimation = new Animation(0.05f, legsFrames[4]);
 		legsBackRunAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation legsWalkAnimation = new Animation(0.0625f, legsFrames[5]);
+		legsWalkAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
+		Animation legsWalkBackAnimation = new Animation(0.0625f, legsFrames[6]);
+		legsWalkBackAnimation.setPlayMode(Animation.PlayMode.LOOP);
+
 /////////////////////////////
 		EntityAnimation playerLegsAnimation = new EntityAnimation();
 		playerLegsAnimation.addAnimation("Idle", legsIdleAnimation);		// Add idle animation to collection
 		playerLegsAnimation.addAnimation("Run", legsRunAnimation);			// Add run animation to collection
 		playerLegsAnimation.addAnimation("BackRun", legsBackRunAnimation);	// Add backwards running animation to collection
+		playerLegsAnimation.addAnimation("Walk", legsWalkAnimation);			// Add walk animation to collection
+		playerLegsAnimation.addAnimation("BackWalk", legsWalkBackAnimation);	// Add backwards walking animation to collection
 
 		EntityAnimation playerTorsoAnimation = new EntityAnimation();
 		playerTorsoAnimation.addAnimation("Idle", torsoIdleAnimation);		// Add idle animation to collection
 		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
-		playerTorsoAnimation.addAnimation("Shoot", torsoShootAnimation);		// Add idle animation to collection
-		playerTorsoAnimation.addAnimation("RunShoot", torsoRunShootAnimation);		// Add idle animation to collection
+		playerTorsoAnimation.addAnimation("Shoot", torsoShootAnimation);		// Add shoot animation to collection
+		playerTorsoAnimation.addAnimation("RunShoot", torsoRunShootAnimation);		// Add running shooting animation to collection
+		playerTorsoAnimation.addAnimation("Reload", torsoReloadAnimation);		// Add reload animation to collection
+		playerTorsoAnimation.addAnimation("Walk", torsoWalkAnimation);		// Add walk animation to collection
+		playerTorsoAnimation.addAnimation("WalkShoot", torsoWalkShootAnimation);		// Add shooting walk animation to collection
 
 
 		// Create a player and assign him the animations we created
@@ -125,7 +146,10 @@ public class InGameScreen implements Screen {
 		playerController = new PlayerController(player, stage);
 
 		// Create the tile map
-		map = new TileMap(100, 100, ZShooter.WORLD_TILE_SIZE, world);
+		Texture tileMapTexture = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+		map = new TileMap(tileMapTexture, 100, 100, ZShooter.WORLD_TILE_SIZE, world);
+		map.generateRandomMap();
+		map.generateBody();
 
 
 // Debugging:
@@ -175,7 +199,7 @@ public class InGameScreen implements Screen {
 		zombieIdle3Animation.setPlayMode(Animation.PlayMode.LOOP);
 
 		// Create attack animation
-		Animation zombieAttackAnimation = new Animation(0.06f, zombieFrames[4]);
+		Animation zombieAttackAnimation = new Animation(0.0375f, zombieFrames[4]);
 		zombieAttackAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
 		// Create die animation
@@ -207,7 +231,7 @@ public class InGameScreen implements Screen {
 		}
 
 		rayHandler = new RayHandler(world);
-		rayHandler.setAmbientLight(0.02f, 0.03f, 0.24f, 0.06f);
+		rayHandler.setAmbientLight(0.02f, 0.03f, 0.24f, 0.12f);
 
 		// Use STRONG Colors with low alpha, so stacking lights does'nt blind the user...
 		light = new ConeLight(rayHandler, 128, new Color(1,1,1,0.65f), 20, 0, 0, 0, 45);

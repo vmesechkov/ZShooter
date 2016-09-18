@@ -77,12 +77,24 @@ public class PlayerController {
 			movementKnobAngle = 90.0f + calculateAngleOfKnob(movementKnobPos);
 
 			// If we're here, the player isnt standing, so animate him in Run animation
-			player.animateLegs("Run", Gdx.app.getGraphics().getDeltaTime());
+			if (Math.abs(movementKnobPos.x) >= 0.4 || Math.abs(movementKnobPos.y) >= 0.4) {
+				player.animateLegs("Run", Gdx.app.getGraphics().getDeltaTime());
 
-			// Move the player
-			controllerMoveVec.set(movementKnobPos);
-			controllerMoveVec.scl(3);
-			player.body.setLinearVelocity(controllerMoveVec);
+				// Move the player
+				controllerMoveVec.set(movementKnobPos);
+				controllerMoveVec.nor();
+				controllerMoveVec.scl(2.5f);
+				player.body.setLinearVelocity(controllerMoveVec);
+			}
+			else {
+				player.animateLegs("Walk", Gdx.app.getGraphics().getDeltaTime());
+
+				// Move the player
+				controllerMoveVec.set(movementKnobPos);
+				controllerMoveVec.nor();
+				controllerMoveVec.scl(1.25f);
+				player.body.setLinearVelocity(controllerMoveVec);
+			}
 		}
 		else {
 			movementKnobAngle = rotationKnobAngle;
@@ -105,8 +117,14 @@ public class PlayerController {
 					movementKnobAngle -= 180;
 				}
 				movementKnobAngle %= 360;
-				player.animateLegs("BackRun", Gdx.app.getGraphics().getDeltaTime());
-				player.animateTorso("RunShoot", Gdx.app.getGraphics().getDeltaTime());
+				if (Math.abs(movementKnobPos.x) >= 0.4 || Math.abs(movementKnobPos.y) >= 0.4) {
+					player.animateLegs("BackRun", Gdx.app.getGraphics().getDeltaTime());
+					player.animateTorso("RunShoot", Gdx.app.getGraphics().getDeltaTime());
+				}
+				else {
+					player.animateLegs("BackWalk", Gdx.app.getGraphics().getDeltaTime());
+					player.animateTorso("WalkShoot", Gdx.app.getGraphics().getDeltaTime());
+				}
 			}
 			else {
 				player.animateTorso("Shoot", Gdx.app.getGraphics().getDeltaTime());
@@ -120,7 +138,12 @@ public class PlayerController {
 				player.animateTorso("Idle", Gdx.app.getGraphics().getDeltaTime());
 			}
 			else {
-				player.animateTorso("Run", Gdx.app.getGraphics().getDeltaTime());
+				if (Math.abs(movementKnobPos.x) >= 0.4 || Math.abs(movementKnobPos.y) >= 0.4) {
+					player.animateTorso("Run", Gdx.app.getGraphics().getDeltaTime());
+				}
+				else {
+					player.animateTorso("Walk", Gdx.app.getGraphics().getDeltaTime());
+				}
 			}
 		}
 		// Update player's pan

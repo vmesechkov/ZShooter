@@ -36,6 +36,7 @@ public class OptionsScreen implements Screen {
     private TextButton aboutButton;
     private Label labelSound;
     private Label labelMusic;
+	private TextButton tileMapEditorButton;
 
     private OptionsScreen(final Game game){
         this.game = game;
@@ -58,8 +59,25 @@ public class OptionsScreen implements Screen {
         });
         stage.addActor(aboutButton);
 
-        soundSlider = new Slider(1, 3, 0.05f, false, GUI.getGUI().getSliderStyle());
-        soundSlider.setAnimateDuration(0.1f);
+		tileMapEditorButton = new TextButton("Editor", GUI.getGUI().getTextButtonStyle());
+		tileMapEditorButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
+		tileMapEditorButton.setWidth(ZShooter.getScreenWidth() / 3); //** Button Width **//
+		tileMapEditorButton.setPosition(ZShooter.getScreenWidth() - tileMapEditorButton.getWidth(),ZShooter.getScreenHeight() - tileMapEditorButton.getHeight());
+		tileMapEditorButton.addListener(new InputListener(){
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				return true;
+			}
+
+			@Override
+			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+				game.setScreen(TileMapEditorScreen.getTileMapEditor(game));
+			}
+		});
+		stage.addActor(tileMapEditorButton);
+
+        soundSlider = new Slider(0f, 1f, 0.05f, false, GUI.getGUI().getSliderStyle());
+        soundSlider.setAnimateDuration(0.01f);
         soundSlider.setWidth(ZShooter.getScreenWidth()/2);
         soundSlider.setPosition(ZShooter.getScreenWidth() / 2 - soundSlider.getWidth()/2, ZShooter.getScreenHeight()/6);
         soundSlider.getStyle().knob.setMinHeight(80);
@@ -69,8 +87,8 @@ public class OptionsScreen implements Screen {
         soundSlider.getStyle().knobBefore.setMinWidth(0);
         stage.addActor(soundSlider);
 
-        musicSlider = new Slider(1, 3, 0.05f, false, GUI.getGUI().getSliderStyle());
-        musicSlider.setAnimateDuration(0.1f);
+        musicSlider = new Slider(0f, 1f, 0.025f, false, GUI.getGUI().getSliderStyle());
+        musicSlider.setAnimateDuration(0.01f);
         musicSlider.setWidth(ZShooter.getScreenWidth()/2);
         musicSlider.setPosition(ZShooter.getScreenWidth() / 2 - musicSlider.getWidth()/2, ZShooter.getScreenHeight()/25);
 
@@ -112,10 +130,14 @@ public class OptionsScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 0.5f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        Gdx.app.log("Changed", "" + ZShooter.soundVolume);
-        ZShooter.soundVolume = soundSlider.getValue();
+		ZShooter.setSoundVolume(soundSlider.getValue());
+		ZShooter.setMusicVolume(musicSlider.getValue());
+		if (ZShooter.getMusic() != null) {
+			ZShooter.getMusic().setVolume(ZShooter.getMusicVolume());
+		}
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
+
+		if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
             game.setScreen(MainMenu.getMainMenu(game));
         }
 
