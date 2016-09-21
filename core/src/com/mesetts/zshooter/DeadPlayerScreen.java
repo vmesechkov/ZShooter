@@ -3,6 +3,7 @@ package com.mesetts.zshooter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -24,8 +25,9 @@ public class DeadPlayerScreen implements Screen {
     private Stage stage;
     private TextButton loadGameButton;
     private TextButton mainMenuButton;
+    private Color colorPrim = new Color(1f,1f,1f,0.75f);
     public float textDrawLength = 0.0f;
-    public static final  float TEXTSPEED = 0.3f;  //Text appearing on the screen.
+    public static final  float TEXTSPEED = 0.25f;  //Text appearing on the screen.
     public String theText = "You are DEAD...";
 
 
@@ -44,6 +46,7 @@ public class DeadPlayerScreen implements Screen {
 
         //Load button
         loadGameButton = new TextButton("Load Game",GUI.getGUI().getTextButtonStyle());
+        loadGameButton.setColor(colorPrim);
         loadGameButton.setSize( ZShooter.getScreenWidth() / 2.8f, ZShooter.getScreenHeight() / 5f);
         loadGameButton.setPosition(ZShooter.getScreenWidth() / 2f - loadGameButton.getWidth()/2, ZShooter.getScreenHeight()/7f);
         loadGameButton.addListener(new InputListener(){
@@ -70,6 +73,7 @@ public class DeadPlayerScreen implements Screen {
 
         //Back to main menu button
         mainMenuButton = new TextButton("Main Menu", GUI.getGUI().getTextButtonStyle());
+        mainMenuButton.setColor(colorPrim);
         mainMenuButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
         mainMenuButton.setWidth(ZShooter.getScreenWidth() / 3); //** Button Width **//
         mainMenuButton.setPosition(ZShooter.getScreenWidth() / 2 - mainMenuButton.getWidth()/2,ZShooter.getScreenHeight()/2f);

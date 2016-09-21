@@ -60,6 +60,7 @@ public class PausedGameScreen implements Screen {
 
             }
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                saveAndPlay.setText("Saved!");
                 Database.getOurInstance().setCordinateX(InGameScreen.player.getX());
                 Database.getOurInstance().setCordinateY(InGameScreen.player.getY());
                 Database.getOurInstance().save();
@@ -83,6 +84,9 @@ public class PausedGameScreen implements Screen {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(saveAndPlay.getText().equals("Saved!")){
+                    saveAndPlay.setText("Save and Play");
+                }
                 game.setScreen(InGameScreen.getInGameScreen(game));
             }
         });
@@ -166,7 +170,9 @@ public class PausedGameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
 
             GLProfiler.disable();
-
+            if(saveAndPlay.getText().equals("Saved!")){
+                saveAndPlay.setText("Save and Play");
+            }
             Gdx.app.log("Back button pressed.", "Going to Main Menu.");
             game.setScreen(InGameScreen.getInGameScreen(game));
         }

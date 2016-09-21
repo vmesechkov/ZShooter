@@ -240,7 +240,7 @@ public class InGameScreen implements Screen {
 
 
 		// Create the tile map
-		Texture tileMapTexture = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+		Texture tileMapTexture = ZShooter.assets.get("data/Textures/textureSheet2_128.png");
 		map = new TileMap(tileMapTexture, 100, 100, ZShooter.WORLD_TILE_SIZE, world);
 		map.generateRandomMap();
 		map.generateBody();
@@ -275,7 +275,7 @@ public class InGameScreen implements Screen {
 //		groundBox.dispose();
 
 		// Get frames in an array from the texture
-		Texture zombieSheet = new Texture(Gdx.files.internal("data/zombie_sheet_128.png"));
+		Texture zombieSheet = ZShooter.assets.get("data/zombie_sheet_128.png");
 		TextureRegion[][] zombieFrames = TextureRegion.split(zombieSheet, zombieSheet.getWidth() / 16, zombieSheet.getHeight() / 6);
 
 		// Create and init animations for zombie run

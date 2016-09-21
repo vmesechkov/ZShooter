@@ -109,5 +109,7 @@ public class LoadingScreen implements Screen {
 		ZShooter.assets.load("data/touchKnob.png",Texture.class);
 		ZShooter.assets.load("data/Textures/textureSheet2_128.png",Texture.class);
 		ZShooter.assets.load("data/Textures/LoadingScreenFIXED2.jpg",Texture.class);
+		ZShooter.assets.load("data/zombie_sheet_128.png",Texture.class);
+		ZShooter.assets.load("data/Textures/textureSheet2_128.png",Texture.class);
 	}
 }
