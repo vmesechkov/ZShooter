@@ -164,11 +164,11 @@ public class TileMapEditorScreen implements Screen {
 
 
 		// Create the tile map
-		Texture tileMapTexture = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+		Texture tileMapTexture = ZShooter.assets.get("data/Textures/textureSheet2_128.png");
 		map = new TileMap(tileMapTexture, 100, 100, ZShooter.WORLD_TILE_SIZE, null);
 		map.generateRandomMap();
 
-		final Texture textureSheet = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
+		final Texture textureSheet = ZShooter.assets.get("data/Textures/textureSheet2_128.png");
 		final TextureRegion[][] textures = TextureRegion.split(textureSheet, 128, 128);
 
 		currentTile = new Tile(textures[0][0], 0);

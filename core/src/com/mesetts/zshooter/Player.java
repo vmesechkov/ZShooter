@@ -96,7 +96,7 @@ public class Player extends Entity {
 	public ArrayList<Projectile> bullets = new ArrayList<Projectile>();
 	Projectile bullet;
 
-	Texture bulletTexture = new Texture(Gdx.files.internal("data/bullet.png"));
+	Texture bulletTexture = ZShooter.assets.get("data/bullet.png");
 	TextureRegion bulletRegion;
 
 	float x,y;

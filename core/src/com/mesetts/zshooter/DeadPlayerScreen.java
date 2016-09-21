@@ -37,7 +37,7 @@ public class DeadPlayerScreen implements Screen {
     }
 
     private DeadPlayerScreen(final Game game) {
-        background = new Texture("data/Textures/ZSHOOTER BACKGROUND.jpg");
+        background = ZShooter.assets.get("data/Textures/ZSHOOTER BACKGROUND.jpg");
         this.game = game;
         stage = new Stage(ZShooter.getViewport(), ZShooter.getBatch());
         batch = ZShooter.getBatch();

@@ -12,5 +12,6 @@ eclipse.project {
 dependencies {
     compile 'org.lwjgl.lwjgl:lwjgl:2.9.2'
     compile 'com.badlogicgames.box2dlights:box2dlights:1.4'
+    compile 'com.badlogicgames.gdx:gdx-backend-android:1.9.3'
 }
 

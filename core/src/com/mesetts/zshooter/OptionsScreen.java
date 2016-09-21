@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -34,13 +35,16 @@ public class OptionsScreen implements Screen {
     private Slider soundSlider;
     private Slider musicSlider;
     private TextButton aboutButton;
+    private Texture background;
     private Label labelSound;
     private Label labelMusic;
+    private TextButton backButton;
 	private TextButton tileMapEditorButton;
 
     private OptionsScreen(final Game game){
         this.game = game;
         stage = new Stage(ZShooter.getViewport(), ZShooter.getBatch());
+        background = ZShooter.assets.get("data/Textures/Options Screen.jpg");
 
         aboutButton = new TextButton("About", GUI.getGUI().getTextButtonStyle());
         aboutButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
@@ -59,6 +63,30 @@ public class OptionsScreen implements Screen {
         });
         stage.addActor(aboutButton);
 
+        backButton = new TextButton("Back", GUI.getGUI().getTextButtonStyle());
+        backButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
+        backButton.setWidth(ZShooter.getScreenWidth() / 3); //** Button Width **//
+        backButton.setPosition(ZShooter.getScreenWidth() / 2 - aboutButton.getWidth()/2,ZShooter.getScreenHeight()/2f);
+        backButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(PausedGameScreen.isItCalled){
+                    game.setScreen(PausedGameScreen.getPausedGame(game));
+                }
+                else
+                    game.setScreen(MainMenu.getMainMenu(game));
+
+            }
+        });
+        stage.addActor(backButton);
+
+        soundSlider = new Slider(1, 3, 0.05f, false, GUI.getGUI().getSliderStyle());
+        soundSlider.setAnimateDuration(0.1f);
 		tileMapEditorButton = new TextButton("Editor", GUI.getGUI().getTextButtonStyle());
 		tileMapEditorButton.setHeight(ZShooter.getScreenHeight() / 5); //** Button Height **//
 		tileMapEditorButton.setWidth(ZShooter.getScreenWidth() / 3); //** Button Width **//
@@ -88,6 +116,7 @@ public class OptionsScreen implements Screen {
         stage.addActor(soundSlider);
 
         musicSlider = new Slider(0f, 1f, 0.025f, false, GUI.getGUI().getSliderStyle());
+        musicSlider.setValue(0.5f);
         musicSlider.setAnimateDuration(0.01f);
         musicSlider.setWidth(ZShooter.getScreenWidth()/2);
         musicSlider.setPosition(ZShooter.getScreenWidth() / 2 - musicSlider.getWidth()/2, ZShooter.getScreenHeight()/25);
@@ -129,8 +158,11 @@ public class OptionsScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 0.5f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        ZShooter.getBatch().begin();
+        ZShooter.getBatch().draw(background,0,0);
+        ZShooter.getBatch().end();
 		ZShooter.setSoundVolume(soundSlider.getValue());
+
 		ZShooter.setMusicVolume(musicSlider.getValue());
 		if (ZShooter.getMusic() != null) {
 			ZShooter.getMusic().setVolume(ZShooter.getMusicVolume());
@@ -138,7 +170,11 @@ public class OptionsScreen implements Screen {
 
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
-            game.setScreen(MainMenu.getMainMenu(game));
+            if(PausedGameScreen.isItCalled){
+                game.setScreen(PausedGameScreen.getPausedGame(game));
+            }
+            else
+                game.setScreen(MainMenu.getMainMenu(game));
         }
 
         stage.act();
@@ -169,6 +205,8 @@ public class OptionsScreen implements Screen {
 
     @Override
     public void dispose() {
+        optionsScreen = null;
+        stage.dispose();
 
     }
 

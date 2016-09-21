@@ -3,6 +3,7 @@ package com.mesetts.zshooter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
@@ -16,11 +17,18 @@ import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.xml.crypto.Data;
 
 import box2dLight.ConeLight;
 import box2dLight.DirectionalLight;
@@ -30,7 +38,6 @@ import box2dLight.RayHandler;
 public class InGameScreen implements Screen {
 
 	private static Screen inGameScreen;
-
 	private Vector2 screenSize;
 
 	private ZBatch batch;
@@ -38,15 +45,16 @@ public class InGameScreen implements Screen {
 	private Game game;
 
 	private Vector2 camera;
+	private Color colorPrim = new Color(0.9f,0.8f,0.9f,0.3f);
 
 	World world;
-	Player player;
+	public static Player player;
 	PlayerController playerController;
 	TileMap map;
 
 // Debugging info:
 	FPSLogger fpsLogger = new FPSLogger();	// Outputs FPS in Log
-
+	private TextButton pauseButton;
 	protected Label label;					// Outputs FPS on Screen
 	protected BitmapFont font;				// A blank font (default?)
 	protected StringBuilder stringBuilder;	// Text on screen
@@ -56,7 +64,7 @@ public class InGameScreen implements Screen {
 	RayHandler rayHandler;
 	PointLight pointLight;
 
-	private InGameScreen(Game game) {
+	private InGameScreen(final Game game) {
 		this.game = game;
 		batch = (ZBatch)ZShooter.getBatch();
 
@@ -65,6 +73,27 @@ public class InGameScreen implements Screen {
 
 		//Create a Stage and add TouchPad
 		stage = new Stage(ZShooter.getViewport(), batch);
+		pauseButton = new TextButton("X", GUI.getGUI().getTextButtonStyle());
+		pauseButton.setColor(colorPrim);
+		pauseButton.setSize(ZShooter.getScreenWidth() / 12f, ZShooter.getScreenHeight() / 12f);
+		pauseButton.setPosition(ZShooter.getScreenWidth()-pauseButton.getWidth(), ZShooter.getScreenHeight()-pauseButton.getHeight());
+		pauseButton.addListener(new InputListener(){
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				Gdx.app.log("my app", "Pressed"); //** Usually used to start Game, etc. **//
+
+
+				// TODO Auto-generated method stub
+
+
+				return true;
+
+			}
+			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+				game.setScreen(PausedGameScreen.getPausedGame(game));
+			}
+		});
+		// Add button to screen stage
+		stage.addActor(pauseButton);
 
 		//Get viewport sizes
 		screenSize.x = stage.getViewport().getWorldWidth();
@@ -361,7 +390,7 @@ public class InGameScreen implements Screen {
 			GLProfiler.disable();
 
 			Gdx.app.log("Back button pressed.", "Going to Main Menu.");
-			game.setScreen(MainMenu.getMainMenu(game));
+			game.setScreen(PausedGameScreen.getPausedGame(game));
 		}
 
 // Debugging:
@@ -398,5 +427,9 @@ public class InGameScreen implements Screen {
 	}
 	public static boolean exists(){
 		return inGameScreen != null;
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 }

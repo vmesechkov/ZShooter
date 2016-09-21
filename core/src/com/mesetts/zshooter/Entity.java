@@ -108,7 +108,7 @@ public class Entity {
 		this.position.set(position);
 	}
 
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		if (body != null) {
 			body.setTransform(x, y, body.getAngle());
 		}

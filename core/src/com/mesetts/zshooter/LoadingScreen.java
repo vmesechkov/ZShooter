@@ -7,33 +7,29 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
 
 /**
  * Created by EpsiloN on 8/23/2016.
  */
-public class LoadingScreen extends ScreenAdapter {
+public class LoadingScreen implements Screen {
 
-	private static final float PROGRESS_BAR_WIDTH = ZShooter.getScreenWidth()/2f;
-	private static final float PROGRESS_BAR_HEIGHT = ZShooter.getScreenHeight()/10f;
 	private static Screen loadingScreen;			// Singleton reference to loading screen object
-
-	private ZShooter game;
-	private ShapeRenderer shapeRenderer;
-	private Label titleLoadingScreen;
+	private Texture background;
+	private Game game;
 	private float progress;
+	private Stage stage;
+	private LoadingScreen(Game game) {
 
-	private LoadingScreen(ZShooter game) {
-		shapeRenderer = new ShapeRenderer();
-
+		background = new Texture("data/Textures/LoadingScreenFIXED2.jpg");
 		this.game = game;
-
+		stage = new Stage(ZShooter.getViewport(),ZShooter.getBatch());
 		this.progress = 0f;
 		queueAssets();
 	}
@@ -45,11 +41,14 @@ public class LoadingScreen extends ScreenAdapter {
 
 	@Override
 	public void render(float delta) {
-		super.render(delta);
-		Gdx.gl.glClearColor(0f,0f,0f,0f);
+		Gdx.gl.glClearColor(0f,0f,0f,0.0f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		ZShooter.getBatch().begin();
+		ZShooter.getBatch().draw(background,0,0);
+		ZShooter.getBatch().end();
 		update(delta);
-
+		stage.act();
+		stage.draw();
 		if(ZShooter.assets.update()){
 			game.setScreen(MainMenu.getMainMenu(game));
 		}
@@ -59,9 +58,7 @@ public class LoadingScreen extends ScreenAdapter {
 
 	@Override
 	public void resize(int width, int height) {
-		ZShooter.getViewport().update(width,height);
-		ZShooter.getBatch().setProjectionMatrix(ZShooter.getViewport().getCamera().combined);
-		shapeRenderer.setProjectionMatrix(ZShooter.getViewport().getCamera().combined);
+
 	}
 
 	@Override
@@ -82,7 +79,7 @@ public class LoadingScreen extends ScreenAdapter {
 	@Override
 	public void dispose() {
 		// Singleton destroy
-		loadingScreen = null;
+		stage.dispose();
 	}
 
 	public static Screen getLoadingScreen(ZShooter game) {
@@ -94,13 +91,7 @@ public class LoadingScreen extends ScreenAdapter {
 
 	private void update(float delta){
 		progress = ZShooter.assets.getProgress();
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		shapeRenderer.setColor(Color.RED);
-		shapeRenderer.rect((ZShooter.getScreenWidth() - PROGRESS_BAR_WIDTH)/2f,
-							(ZShooter.getScreenHeight() - PROGRESS_BAR_HEIGHT)/2f,
-								PROGRESS_BAR_WIDTH * progress,
-								PROGRESS_BAR_HEIGHT);
-		shapeRenderer.end();
+
 	}
 
 
@@ -108,5 +99,15 @@ public class LoadingScreen extends ScreenAdapter {
 		ZShooter.assets.load("gdx-skins-master/Styles + Skins + Fonts/skin/star-soldier-ui.atlas", TextureAtlas.class);
 		ZShooter.assets.load("gdx-skins-master/Styles + Skins + Fonts/skin/font-export.fnt", BitmapFont.class);
 		ZShooter.assets.load("gdx-skins-master/Styles + Skins + Fonts/skin/font-title-export.fnt",BitmapFont.class);
+		ZShooter.assets.load("data/Textures/Walking zombies for the introscreens.jpg",Texture.class);
+		ZShooter.assets.load("data/Textures/LoadingScreenZombies.jpg",Texture.class);
+		ZShooter.assets.load("data/Textures/Options Screen.jpg",Texture.class);
+		ZShooter.assets.load("data/Textures/Zombie head.jpg",Texture.class);
+		ZShooter.assets.load("data/Textures/ZSHOOTER BACKGROUND.jpg",Texture.class);
+		ZShooter.assets.load("data/bullet.png",Texture.class);
+		ZShooter.assets.load("data/touchBackground.png",Texture.class);
+		ZShooter.assets.load("data/touchKnob.png",Texture.class);
+		ZShooter.assets.load("data/Textures/textureSheet2_128.png",Texture.class);
+		ZShooter.assets.load("data/Textures/LoadingScreenFIXED2.jpg",Texture.class);
 	}
 }

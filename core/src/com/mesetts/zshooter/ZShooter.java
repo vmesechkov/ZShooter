@@ -15,8 +15,8 @@ public class ZShooter extends Game {
 
 	private static ZBatch batch;
 	private static Viewport viewport;
-	private static float soundVolume = 0f;
-	private static float musicVolume = 0f;
+	public static float soundVolume;
+	public static float musicVolume = 0.5f;
 	private static Vector2 screenSize;
 	public static AssetManager assets;
 	static Game game;
@@ -35,6 +35,7 @@ public class ZShooter extends Game {
 		viewport = new FitViewport(1920, 1080);
 		screenSize = new Vector2( viewport.getWorldWidth(), viewport.getWorldHeight());
 		batch.setScreenSize(screenSize);
+		Database.getOurInstance();
 
 //		AudioManager audio = (AudioManager) getSystemService(context.AUDIO_SERVICE);
 //		musicVolume = audio.getStreamVolume(AudioManager.STREAM_RING);

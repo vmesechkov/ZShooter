@@ -38,8 +38,8 @@ public class PlayerController {
 
 		// Initialize touch pad style
 		touchpadSkin = new Skin();														//Create a touchpad skin
-		touchpadSkin.add("touchBackground", new Texture("data/touchBackground.png"));	//Set background image
-		touchpadSkin.add("touchKnob", new Texture("data/touchKnob.png"));				//Set knob image
+		touchpadSkin.add("touchBackground", ZShooter.assets.get("data/touchBackground.png"));	//Set background image
+		touchpadSkin.add("touchKnob", ZShooter.assets.get("data/touchKnob.png"));				//Set knob image
 
 		touchBackground = touchpadSkin.getDrawable("touchBackground");					//Create Drawable's from TouchPad skin
 		touchKnob = touchpadSkin.getDrawable("touchKnob");
