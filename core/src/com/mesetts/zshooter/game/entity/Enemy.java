@@ -139,9 +139,22 @@ public class Enemy extends Entity implements Pool.Poolable {
 				state = State.DYING;
 				stateTime = 0;
 
-				Weapon weapon = new Handgun(weaponsFrames[2], 25, 15, 12, 6, 1, 10, 0.4f, 13f, world);
-				((InGameScreen)(InGameScreen.getInGameScreen(game))).getWeapons().add(weapon);
-				weapon.drop(Gdx.app.getGraphics().getDeltaTime());
+				double rndWeap = Math.random();
+				Weapon weapon = null;
+				if (rndWeap <= 0.3) {
+					weapon = new Handgun(weaponsFrames[0], 10, 10, 12, 6, 1, 10, 0.4f, 13f, world);
+				}
+				if (rndWeap > 0.3 && rndWeap <= 0.6) {
+					weapon = new Handgun(weaponsFrames[1], 15, 15, 30, 30, 2, 15, 0.4f, 13f, world);
+				}
+				if (rndWeap > 0.6) {
+					weapon = new Handgun(weaponsFrames[2], 20, 15, 30, 20, 3, 20, 0.4f, 13f, world);
+				}
+				if (weapon != null) {
+					weapon.setPosition(body.getPosition());
+					weapon.drop(Gdx.app.getGraphics().getDeltaTime());
+					((InGameScreen) (InGameScreen.getInGameScreen(game))).getWeapons().add(weapon);
+				}
 			}
 			else {
 				// If we're dying and finished our animation, lets get DEAD

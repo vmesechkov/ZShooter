@@ -216,29 +216,6 @@ public class InGameScreen implements Screen {
 		playerController = new PlayerController(player, stage);
 
 
-
-		// PLAYER DROP WEAPON BUTTON FOR TESTING
-		Button backButton = new TextButton("Drop", GUI.getGUI().getTextButtonStyle());
-		backButton.setSize( ZShooter.getScreenWidth() / 5f, ZShooter.getScreenHeight() / 5f);
-		backButton.setPosition(ZShooter.getScreenWidth() - backButton.getWidth(), ZShooter.getScreenHeight() - backButton.getHeight());
-		backButton.addListener(new InputListener() {
-			@Override
-			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				return true;
-			}
-			@Override
-			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-				player.getWeapon().drop(Gdx.app.getGraphics().getDeltaTime());
-				Texture weaponsSheet = new Texture(Gdx.files.internal("data/weapons_sheet_128.png"));
-				TextureRegion[][] weaponsFrames = TextureRegion.split(weaponsSheet, weaponsSheet.getWidth() / 14, weaponsSheet.getHeight() / 3);
-				player.setWeapon(new Handgun(weaponsFrames[2], 25, 15, 12, 6, 1, 10, 0.4f, 13f, world));
-				weapons.add(player.getWeapon());
-			}
-		});
-		stage.addActor(backButton);
-
-
-
 		// Create the tile map
 		Texture tileMapTexture = ZShooter.assets.get("data/Textures/textureSheet2_128.png");
 		map = new TileMap(tileMapTexture, 100, 100, ZShooter.WORLD_TILE_SIZE, world);

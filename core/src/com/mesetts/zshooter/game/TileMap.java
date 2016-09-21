@@ -119,7 +119,7 @@ public class TileMap {
 		Random r = new Random();
 		for(int i = 0; i < content.length; i++) {
 			for (int j = 0; j < content[0].length; j++) {
-				content[i][j] = (byte)r.nextInt(textures.length * textures[0].length);
+				content[i][j] = (byte)r.nextInt(textures.length * textures[0].length - 1);
 				positions[i][j][0] = i * tileSize;
 				positions[i][j][1] = j * tileSize;
 			}
