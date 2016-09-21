@@ -1,4 +1,4 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

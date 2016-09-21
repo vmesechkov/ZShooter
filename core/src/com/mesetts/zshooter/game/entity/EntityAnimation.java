@@ -1,4 +1,4 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.entity;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
 

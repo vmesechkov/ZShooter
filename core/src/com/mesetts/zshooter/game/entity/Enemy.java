@@ -1,36 +1,68 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.entity;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Plane;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.mesetts.zshooter.InGameScreen;
+import com.mesetts.zshooter.ZShooter;
+import com.mesetts.zshooter.game.PathFinder;
+import com.mesetts.zshooter.game.TileMap;
+import com.mesetts.zshooter.game.weaponsys.Handgun;
+import com.mesetts.zshooter.game.weaponsys.Weapon;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 
-public class Enemy extends Entity {
+public class Enemy extends Entity implements Pool.Poolable {
 
-	public Enemy(World world, int tileSize, TileMap map, Player player, int posx, int posy) {
+	private Game game;
+
+	public Enemy(World world, int tileSize, Game game) {
 		super(world, tileSize, CollisionShape.CIRCLE);
+		this.game = game;
 
 		//PathFinder.getPathFinder(map).findPath((int)player.body.getPosition().x, (int)player.body.getPosition().y, (int)body.getPosition().x, (int)body.getPosition().y, path);
-		long startTime = System.currentTimeMillis();
-		PathFinder.getPathFinder(map).findPath((int)player.body.getPosition().x, (int)player.body.getPosition().y, 7, 1, path);
-		long endTime = System.currentTimeMillis();
-		Gdx.app.log("PathFinding ", "Time taken: " + (endTime - startTime));
+//		long startTime = System.currentTimeMillis();
+//		PathFinder.getPathFinder(map).findPath((int)player.body.getPosition().x, (int)player.body.getPosition().y, 7, 1, path);
+//		long endTime = System.currentTimeMillis();
+//		Gdx.app.log("PathFinding ", "Time taken: " + (endTime - startTime));
 
-		setPosition(posx, posy);
+//		setPosition(posx, posy);
+
+		weaponsSheet = new Texture(Gdx.files.internal("data/weapons_sheet_128.png"));
+		weaponsFrames = TextureRegion.split(weaponsSheet, weaponsSheet.getWidth() / 14, weaponsSheet.getHeight() / 3);
 	}
 
-	enum State {
+	Texture weaponsSheet;
+	TextureRegion[][] weaponsFrames;
+
+	public void init(int health, float posX, float posY) {
+		body.setActive(true);
+		body.setAwake(true);
+		setHealth(health);
+		body.setTransform(posX, posY, 0);
+		state = State.IDLE;
+	}
+
+	@Override
+	public void reset() {
+		body.setAwake(false);
+		body.setActive(false);
+	}
+
+	public enum State {
 		IDLE,
 		CHASE,
 		ATTACK,
+		ATTACK_IDLE,
 		WANDER,
 		DYING,
 		DEAD
@@ -54,7 +86,7 @@ public class Enemy extends Entity {
 					@Override
 					public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
 						hitObj = fixture.getBody().getUserData();
-						if (hitObj instanceof Enemy || hitObj instanceof Projectile) {
+						if (hitObj instanceof Enemy || hitObj instanceof com.mesetts.zshooter.game.weaponsys.Projectile) {
 							hitObj = null;
 							//Gdx.app.log("Enemy Chase", " Hitting a zombie, Fraction: " + fraction + ", PointXY: " + point.x + ", " + point.y);
 							return -1f;	//-1 to filter, 0 to stop, 1 to continue
@@ -106,14 +138,18 @@ public class Enemy extends Entity {
 			if (state != State.DYING && state != State.DEAD) {
 				state = State.DYING;
 				stateTime = 0;
+
+				Weapon weapon = new Handgun(weaponsFrames[2], 25, 15, 12, 6, 1, 10, 0.4f, 13f, world);
+				((InGameScreen)(InGameScreen.getInGameScreen(game))).getWeapons().add(weapon);
+				weapon.drop(Gdx.app.getGraphics().getDeltaTime());
 			}
 			else {
 				// If we're dying and finished our animation, lets get DEAD
 				if (animation.getAnimation("Die").isAnimationFinished(stateTime) && state != State.DEAD) {
 					position.set(body.getPosition());
 					state = State.DEAD;
-					world.destroyBody(body);
-					body = null;
+//					world.destroyBody(body);
+//					body = null;
 				} else {
 					// If we're still dying or we're dead
 					if (body != null) {
@@ -167,7 +203,7 @@ public class Enemy extends Entity {
 						public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
 							// Get owner of fixture
 							hitObj = fixture.getBody().getUserData();
-							if (hitObj instanceof Enemy || hitObj instanceof Projectile) {
+							if (hitObj instanceof Enemy || hitObj instanceof com.mesetts.zshooter.game.weaponsys.Projectile) {
 								hitObj = null;
 								//Gdx.app.log("Enemy Chase", " Hitting a zombie, Fraction: " + fraction + ", PointXY: " + point.x + ", " + point.y);
 								return -1f;
@@ -259,29 +295,54 @@ public class Enemy extends Entity {
 
 		if (state == State.ATTACK) {
 			if (enemy != null) {
-				if (body.getPosition().dst(enemy.body.getPosition()) <= 0.6) {
-					animate("Attack", deltaTime);
-					attackTime += deltaTime;
-					if (attackTime > 0.4 && !enemyHit) {
+				moveVec.set(enemy.body.getPosition().x - body.getPosition().x, enemy.body.getPosition().y - body.getPosition().y);
+				setPan(90.0f + (float) (Math.toDegrees(Math.atan2(moveVec.y, moveVec.x))));
+
+				body.setLinearVelocity(0f,0f);
+				body.setAngularVelocity(0);
+
+				animate("Attack", deltaTime);
+				attackTime += deltaTime;
+				if (attackTime > 0.4 && !enemyHit) {
+					if (body.getPosition().dst(enemy.body.getPosition()) <= 0.8) {
 						enemyHit = true;
 						enemy.health -= 10;
-					}
-					if (attackTime >= 0.6) {
-						enemyHit = false;
+						Gdx.app.log("Enemy ", "Player Health: " + enemy.health);
 					}
 				}
-				else {
-					state = State.CHASE;
-					update(deltaTime);
-					return;
+				// Idle after hit
+				if (attackTime >= 0.6) {
+					attackTime = 0;
+					if (body.getPosition().dst(enemy.body.getPosition()) <= 0.8) {
+						enemyHit = false;
+						state = State.ATTACK_IDLE;
+					}
+					else {
+						state = State.CHASE;
+						update(deltaTime);
+						return;
+					}
 				}
 			}
 			else {
+				attackTime = 0;
 				state = State.IDLE;
 				update(deltaTime);
 				return;
 			}
 			return;
+		}
+		if (state == State.ATTACK_IDLE) {
+			body.setLinearVelocity(0f,0f);
+			body.setAngularVelocity(0);
+
+			attackTime += deltaTime;
+			animate("Idle1", deltaTime);
+
+			if (attackTime > 2f) {
+				attackTime = 0;
+				state = State.ATTACK;
+			}
 		}
 	}
 
@@ -366,7 +427,7 @@ public class Enemy extends Entity {
 				@Override
 				public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
 					hitObj = fixture.getBody().getUserData();
-					if (hitObj instanceof Enemy || hitObj instanceof Projectile) {
+					if (hitObj instanceof Enemy || hitObj instanceof com.mesetts.zshooter.game.weaponsys.Projectile) {
 						hitObj = null;
 						//Gdx.app.log("Enemy Chase", " Hitting a zombie, Fraction: " + fraction + ", PointXY: " + point.x + ", " + point.y);
 						return -1f;
@@ -426,7 +487,7 @@ public class Enemy extends Entity {
 						public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
 							// Get owner of fixture
 							hitObj = fixture.getBody().getUserData();
-							if (hitObj instanceof Enemy || hitObj instanceof Projectile) {
+							if (hitObj instanceof Enemy || hitObj instanceof com.mesetts.zshooter.game.weaponsys.Projectile) {
 								hitObj = null;
 								//Gdx.app.log("Enemy Chase", " Hitting a zombie, Fraction: " + fraction + ", PointXY: " + point.x + ", " + point.y);
 								return -1f;
@@ -509,6 +570,10 @@ public class Enemy extends Entity {
 //		if (state == State.ATTACK) {
 //			// attack
 //		}
+	}
+
+	public State getState() {
+		return state;
 	}
 
 }

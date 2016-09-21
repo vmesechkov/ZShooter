@@ -1,4 +1,4 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.entity;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -85,7 +85,12 @@ public class Entity {
 // Called when you want to change the current frame of the enemy...
 // Must be the same as defined and registered in the EnemyAnimation object passed to this Enemy
 // For example, ("Run", 0.17f) - Name of animation, Time passed since last frame drawn
+	protected String lastAnimationName;
 	public void animate(String animationName, float deltaTime) {
+		if (lastAnimationName == null || !lastAnimationName.equals(animationName)) {
+			lastAnimationName = animationName;
+			stateTime = 0;
+		}
 		stateTime += deltaTime;
 		currentFrame = animation.getAnimation(animationName).getKeyFrame(stateTime);
 	}
@@ -202,5 +207,9 @@ public class Entity {
 
 	public float getHealth() {
 		return health;
+	}
+
+	public Body getBody() {
+		return body;
 	}
 }

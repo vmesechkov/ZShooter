@@ -1,4 +1,4 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -7,10 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.mesetts.zshooter.*;
 
 public class PlayerController {
 
-	private Player player;
+	private com.mesetts.zshooter.game.entity.Player player;
 
 	// Touchpads
 	private Touchpad movementTouchpad;
@@ -29,7 +30,7 @@ public class PlayerController {
 	private Vector2 rotationKnobPos;
 	private float rotationKnobAngle;
 
-	PlayerController(final Player player, final Stage stage) {
+	public PlayerController(final com.mesetts.zshooter.game.entity.Player player, final Stage stage) {
 		this.player = player;
 
 		controllerMoveVec = new Vector2();
@@ -38,8 +39,8 @@ public class PlayerController {
 
 		// Initialize touch pad style
 		touchpadSkin = new Skin();														//Create a touchpad skin
-		touchpadSkin.add("touchBackground", ZShooter.assets.get("data/touchBackground.png"));	//Set background image
-		touchpadSkin.add("touchKnob", ZShooter.assets.get("data/touchKnob.png"));				//Set knob image
+		touchpadSkin.add("touchBackground", new Texture("data/touchBackground.png"));	//Set background image
+		touchpadSkin.add("touchKnob", new Texture("data/touchKnob.png"));				//Set knob image
 
 		touchBackground = touchpadSkin.getDrawable("touchBackground");					//Create Drawable's from TouchPad skin
 		touchKnob = touchpadSkin.getDrawable("touchKnob");
@@ -66,6 +67,24 @@ public class PlayerController {
 
 	float knobAngleDifference;
 	public boolean update() {
+
+		if (player.getHealth() <= 0) {
+			if (player.isAlive()) {
+				player.setAlive(false);
+				player.setStateTime(0f);
+			}
+			player.getBody().setLinearVelocity(0f,0f);
+			player.getBody().setAngularVelocity(0f);
+			if (!player.getTorsoAnimation().getAnimation("Death").isAnimationFinished(player.getStateTime())) {
+				player.animateLegs("Death", Gdx.app.getGraphics().getDeltaTime());
+				player.animateTorso("Death", Gdx.app.getGraphics().getDeltaTime());
+			}
+			else {
+				return false;
+			}
+			return true;
+		}
+
 		movementKnobPos.x = movementTouchpad.getKnobPercentX();
 		movementKnobPos.y = movementTouchpad.getKnobPercentY();
 
@@ -84,7 +103,7 @@ public class PlayerController {
 				controllerMoveVec.set(movementKnobPos);
 				controllerMoveVec.nor();
 				controllerMoveVec.scl(2.5f);
-				player.body.setLinearVelocity(controllerMoveVec);
+				player.getBody().setLinearVelocity(controllerMoveVec);
 			}
 			else {
 				player.animateLegs("Walk", Gdx.app.getGraphics().getDeltaTime());
@@ -93,12 +112,12 @@ public class PlayerController {
 				controllerMoveVec.set(movementKnobPos);
 				controllerMoveVec.nor();
 				controllerMoveVec.scl(1.25f);
-				player.body.setLinearVelocity(controllerMoveVec);
+				player.getBody().setLinearVelocity(controllerMoveVec);
 			}
 		}
 		else {
 			movementKnobAngle = rotationKnobAngle;
-			player.body.setLinearVelocity(0,0);
+			player.getBody().setLinearVelocity(0,0);
 
 			player.animateLegs("Idle", Gdx.app.getGraphics().getDeltaTime());
 		}
@@ -130,7 +149,8 @@ public class PlayerController {
 				player.animateTorso("Shoot", Gdx.app.getGraphics().getDeltaTime());
 			}
 
-			player.fire(rotationKnobPos.x, rotationKnobPos.y, Gdx.app.getGraphics().getDeltaTime());
+			//player.fire(rotationKnobPos.x, rotationKnobPos.y, Gdx.app.getGraphics().getDeltaTime());
+			player.fire(Gdx.app.getGraphics().getDeltaTime());
 		}
 		else {
 			rotationKnobAngle = movementKnobAngle;
@@ -149,6 +169,12 @@ public class PlayerController {
 		// Update player's pan
 		player.setLegsPan(movementKnobAngle);
 		player.setPan(rotationKnobAngle);
+
+		// Update the weapon position
+		player.updateWeapon();
+
+		// TODO update all weapons in a list in InGameScreen
+		player.getWeapon().update(Gdx.app.getGraphics().getDeltaTime(), player);
 
 		return true;
 	}

@@ -70,7 +70,7 @@ public class IntroScreen2 implements Screen {
 
     @Override
     public void show() {
-
+		Gdx.input.setInputProcessor(stage);
     }
 
     @Override

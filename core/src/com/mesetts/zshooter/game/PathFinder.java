@@ -1,9 +1,4 @@
-package com.mesetts.zshooter;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.StringBuilder;
-
-import java.util.Arrays;
+package com.mesetts.zshooter.game;
 
 public class PathFinder {
 

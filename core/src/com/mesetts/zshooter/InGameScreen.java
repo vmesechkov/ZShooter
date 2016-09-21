@@ -14,24 +14,36 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
-import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.mesetts.zshooter.game.entity.DeadEntity;
+import com.mesetts.zshooter.game.entity.Entity;
+import com.mesetts.zshooter.game.entity.EntityAnimation;
+import com.mesetts.zshooter.game.entity.Player;
+import com.mesetts.zshooter.game.PlayerController;
+import com.mesetts.zshooter.game.entity.Enemy;
+import com.mesetts.zshooter.game.weaponsys.Handgun;
+import com.mesetts.zshooter.game.weaponsys.ProjectileManager;
+import com.mesetts.zshooter.game.TileMap;
+import com.mesetts.zshooter.game.ZContactListener;
+import com.mesetts.zshooter.game.weaponsys.Weapon;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import javax.xml.crypto.Data;
 
 import box2dLight.ConeLight;
-import box2dLight.DirectionalLight;
 import box2dLight.PointLight;
 import box2dLight.RayHandler;
 
@@ -61,12 +73,29 @@ public class InGameScreen implements Screen {
 
 	Enemy zombie;
 
+	// Light + camera for light calculations
+	ConeLight light;
+	OrthographicCamera cam = new OrthographicCamera(ZShooter.getViewport().getWorldWidth() / ZShooter.WORLD_TILE_SIZE, ZShooter.getViewport().getWorldHeight() / ZShooter.WORLD_TILE_SIZE);
 	RayHandler rayHandler;
-	PointLight pointLight;
+
+	private Array<Enemy> activeZombies = new Array<Enemy>();
+	private ArrayList<Weapon> weapons = new ArrayList<Weapon>();
+	private ArrayList<DeadEntity> deadEntities = new ArrayList<DeadEntity>();
+
+	private Pool<Enemy> zombiesPool = new Pool<Enemy>() {
+		@Override
+		protected Enemy newObject() {
+			zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE, game);
+			zombie.setAnimation(zombieAnimation);
+			return zombie;
+		}
+	};
+
+	private EntityAnimation zombieAnimation;
 
 	private InGameScreen(final Game game) {
 		this.game = game;
-		batch = (ZBatch)ZShooter.getBatch();
+		batch = ZShooter.getBatch();
 
 		screenSize = new Vector2();
 		camera = new Vector2();
@@ -101,11 +130,11 @@ public class InGameScreen implements Screen {
 
 		// Init Physics
 		world = new World(new Vector2(), true);
-		world.setContactListener(new ZContactListener());
+		world.setContactListener(new ZContactListener(world));
 
 // Torso Frames and Texture
 		Texture torsoSheet = new Texture(Gdx.files.internal("data/torso_sheet_128.png"));
-		TextureRegion[][] torsoFrames = TextureRegion.split(torsoSheet, torsoSheet.getWidth() / 16, torsoSheet.getHeight() / 8);
+		TextureRegion[][] torsoFrames = TextureRegion.split(torsoSheet, torsoSheet.getWidth() / 16, torsoSheet.getHeight() / 9);
 
 		Animation torsoIdleAnimation = new Animation(0.15f, torsoFrames[0]);
 		torsoIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
@@ -128,9 +157,12 @@ public class InGameScreen implements Screen {
 		Animation torsoWalkShootAnimation = new Animation(0.125f, torsoFrames[7]);
 		torsoWalkShootAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
+		Animation torsoDeathAnimation = new Animation(0.125f, torsoFrames[8]);
+		torsoDeathAnimation.setPlayMode(Animation.PlayMode.NORMAL);
+
 // Legs Frames and Texture
 		Texture legsSheet = new Texture(Gdx.files.internal("data/legs_sheet_128.png"));
-		TextureRegion[][] legsFrames = TextureRegion.split(legsSheet, legsSheet.getWidth() / 16, legsSheet.getHeight() / 7);
+		TextureRegion[][] legsFrames = TextureRegion.split(legsSheet, legsSheet.getWidth() / 16, legsSheet.getHeight() / 8);
 
 		Animation legsIdleAnimation = new Animation(0.15f, legsFrames[0]);
 		legsIdleAnimation.setPlayMode(Animation.PlayMode.LOOP);
@@ -147,6 +179,9 @@ public class InGameScreen implements Screen {
 		Animation legsWalkBackAnimation = new Animation(0.0625f, legsFrames[6]);
 		legsWalkBackAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
+		Animation legsDeathAnimation = new Animation(0.0625f, legsFrames[7]);
+		legsDeathAnimation.setPlayMode(Animation.PlayMode.NORMAL);
+
 /////////////////////////////
 		EntityAnimation playerLegsAnimation = new EntityAnimation();
 		playerLegsAnimation.addAnimation("Idle", legsIdleAnimation);		// Add idle animation to collection
@@ -154,15 +189,21 @@ public class InGameScreen implements Screen {
 		playerLegsAnimation.addAnimation("BackRun", legsBackRunAnimation);	// Add backwards running animation to collection
 		playerLegsAnimation.addAnimation("Walk", legsWalkAnimation);			// Add walk animation to collection
 		playerLegsAnimation.addAnimation("BackWalk", legsWalkBackAnimation);	// Add backwards walking animation to collection
+		playerLegsAnimation.addAnimation("Death", legsDeathAnimation);	// Add death animation to collection
 
 		EntityAnimation playerTorsoAnimation = new EntityAnimation();
 		playerTorsoAnimation.addAnimation("Idle", torsoIdleAnimation);		// Add idle animation to collection
-		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
+//		playerTorsoAnimation.addAnimation("Run", torsoRunAnimation);		// Add run animation to collection
 		playerTorsoAnimation.addAnimation("Shoot", torsoShootAnimation);		// Add shoot animation to collection
-		playerTorsoAnimation.addAnimation("RunShoot", torsoRunShootAnimation);		// Add running shooting animation to collection
+//		playerTorsoAnimation.addAnimation("RunShoot", torsoRunShootAnimation);		// Add running shooting animation to collection
+		playerTorsoAnimation.addAnimation("Run", torsoIdleAnimation);		// Add run animation to collection
+		playerTorsoAnimation.addAnimation("RunShoot", torsoIdleAnimation);		// Add running shooting animation to collection
 		playerTorsoAnimation.addAnimation("Reload", torsoReloadAnimation);		// Add reload animation to collection
-		playerTorsoAnimation.addAnimation("Walk", torsoWalkAnimation);		// Add walk animation to collection
-		playerTorsoAnimation.addAnimation("WalkShoot", torsoWalkShootAnimation);		// Add shooting walk animation to collection
+//		playerTorsoAnimation.addAnimation("Walk", torsoWalkAnimation);		// Add walk animation to collection
+//		playerTorsoAnimation.addAnimation("WalkShoot", torsoWalkShootAnimation);		// Add shooting walk animation to collection
+		playerTorsoAnimation.addAnimation("Walk", torsoIdleAnimation);		// Add walk animation to collection
+		playerTorsoAnimation.addAnimation("WalkShoot", torsoIdleAnimation);		// Add shooting walk animation to collection
+		playerTorsoAnimation.addAnimation("Death", torsoDeathAnimation);	// Add death animation to collection
 
 
 		// Create a player and assign him the animations we created
@@ -173,6 +214,30 @@ public class InGameScreen implements Screen {
 
 		// Create a player controller (moves & updates the player through Touchpads)
 		playerController = new PlayerController(player, stage);
+
+
+
+		// PLAYER DROP WEAPON BUTTON FOR TESTING
+		Button backButton = new TextButton("Drop", GUI.getGUI().getTextButtonStyle());
+		backButton.setSize( ZShooter.getScreenWidth() / 5f, ZShooter.getScreenHeight() / 5f);
+		backButton.setPosition(ZShooter.getScreenWidth() - backButton.getWidth(), ZShooter.getScreenHeight() - backButton.getHeight());
+		backButton.addListener(new InputListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				return true;
+			}
+			@Override
+			public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+				player.getWeapon().drop(Gdx.app.getGraphics().getDeltaTime());
+				Texture weaponsSheet = new Texture(Gdx.files.internal("data/weapons_sheet_128.png"));
+				TextureRegion[][] weaponsFrames = TextureRegion.split(weaponsSheet, weaponsSheet.getWidth() / 14, weaponsSheet.getHeight() / 3);
+				player.setWeapon(new Handgun(weaponsFrames[2], 25, 15, 12, 6, 1, 10, 0.4f, 13f, world));
+				weapons.add(player.getWeapon());
+			}
+		});
+		stage.addActor(backButton);
+
+
 
 		// Create the tile map
 		Texture tileMapTexture = new Texture(Gdx.files.internal("data/Textures/textureSheet2_128.png"));
@@ -228,14 +293,14 @@ public class InGameScreen implements Screen {
 		zombieIdle3Animation.setPlayMode(Animation.PlayMode.LOOP);
 
 		// Create attack animation
-		Animation zombieAttackAnimation = new Animation(0.0375f, zombieFrames[4]);
+		Animation zombieAttackAnimation = new Animation(0.065f, zombieFrames[4]);
 		zombieAttackAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
 		// Create die animation
 		Animation zombieDieAnimation = new Animation(0.04f, zombieFrames[5]);
 		zombieDieAnimation.setPlayMode(Animation.PlayMode.NORMAL);
 
-		EntityAnimation zombieAnimation = new EntityAnimation();
+		zombieAnimation = new EntityAnimation();
 		zombieAnimation.addAnimation("Idle1", zombieIdle1Animation);		// Add idle animation to collection
 		zombieAnimation.addAnimation("Idle2", zombieIdle2Animation);
 		zombieAnimation.addAnimation("Idle3", zombieIdle3Animation);
@@ -248,23 +313,23 @@ public class InGameScreen implements Screen {
 //		zombie.setHealth(100);
 //		zombie.setAnimation(zombieAnimation);
 
-		zombies = new ArrayList<Enemy>();
-
-		Random r = new Random();
-		for (int i = 0; i < 50; i++) {
-			// Pass the zombie tile coordinates (3,3) to the constructor
-			zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE, map, player, r.nextInt(50), r.nextInt(50));
-			zombie.setHealth(100);
-			zombie.setAnimation(zombieAnimation);
-			zombies.add(zombie);
-		}
+//		zombies = new ArrayList<Enemy>();
+//
+//		Random r = new Random();
+//		for (int i = 0; i < 50; i++) {
+//			// Pass the zombie tile coordinates (3,3) to the constructor
+//			zombie = new Enemy(world, ZShooter.WORLD_TILE_SIZE, map, player, r.nextInt(50), r.nextInt(50));
+//			zombie.setHealth(100);
+//			zombie.setAnimation(zombieAnimation);
+//			zombies.add(zombie);
+//		}
 
 		rayHandler = new RayHandler(world);
 		rayHandler.setAmbientLight(0.02f, 0.03f, 0.24f, 0.12f);
 
 		// Use STRONG Colors with low alpha, so stacking lights does'nt blind the user...
 		light = new ConeLight(rayHandler, 128, new Color(1,1,1,0.65f), 20, 0, 0, 0, 45);
-		light.attachToBody(player.body, 0, 0f, -90f);
+		light.attachToBody(player.getBody(), 0, 0f, -90f);
 		light.setIgnoreAttachedBody(true);
 		light.setSoftnessLength(1.5f);
 		light.setContactFilter((short)0x0001,(short)0x0, (short)0x0001);
@@ -274,22 +339,21 @@ public class InGameScreen implements Screen {
 		light2.setContactFilter((short)0x0001,(short)0x0, (short)0x0001);
 	}
 
-	ConeLight light;
-	OrthographicCamera cam = new OrthographicCamera(ZShooter.getViewport().getWorldWidth() / ZShooter.WORLD_TILE_SIZE, ZShooter.getViewport().getWorldHeight() / ZShooter.WORLD_TILE_SIZE);
-
-	ArrayList<Enemy> zombies;
-
 	// Splits a sprite sheet into texture regions and returns a single array of texture regions
-	private TextureRegion[] arrangeFrames(final Texture sheet, final int cols, final int rows) {
-		TextureRegion[][] tmp = TextureRegion.split(sheet, sheet.getWidth()/cols, sheet.getHeight()/rows);
-		TextureRegion[] finalSheet = new TextureRegion[cols * rows];
-		int index = 0;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				finalSheet[index++] = tmp[i][j];
-			}
-		}
-		return finalSheet;
+//	private TextureRegion[] arrangeFrames(final Texture sheet, final int cols, final int rows) {
+//		TextureRegion[][] tmp = TextureRegion.split(sheet, sheet.getWidth()/cols, sheet.getHeight()/rows);
+//		TextureRegion[] finalSheet = new TextureRegion[cols * rows];
+//		int index = 0;
+//		for (int i = 0; i < rows; i++) {
+//			for (int j = 0; j < cols; j++) {
+//				finalSheet[index++] = tmp[i][j];
+//			}
+//		}
+//		return finalSheet;
+//	}
+
+	public ArrayList<Weapon> getWeapons() {
+		return weapons;
 	}
 
 	@Override
@@ -319,6 +383,23 @@ public class InGameScreen implements Screen {
 	}
 
 
+	public void spawnZombie() {
+		float posX;
+		float posY;
+		do {
+			posX = (float) (Math.random() * 20);
+			posY = (float) (Math.random() * 20);
+		} while(!map.nodeIsWalkable((int)(posY * map.getContent().length + posX)));
+
+		zombie = zombiesPool.obtain();
+		zombie.init(100, posX, posY);
+		activeZombies.add(zombie);
+	}
+
+	private float timePassed;
+	private float deathIdleTime;
+	private boolean playerUpdate;
+	private Weapon weap;
 	@Override
 	public void render(float delta) {
 
@@ -327,14 +408,46 @@ public class InGameScreen implements Screen {
 		//Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		//Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
+		timePassed += delta;
+
 		// Step the physics simulation
 		world.step(1/60f, 6, 6);
 
 		// Update the player's input forces
-		playerController.update();
+		playerUpdate = playerController.update();
+		if (playerUpdate == false) {
+			deathIdleTime += delta;
+			if (deathIdleTime > 3.0f) {
+				game.setScreen(DeadPlayerScreen.getInstance(game));
+			}
+		}
 
-		for (Enemy z: zombies) {
-			z.update(delta);
+		for (int i = 0; i < weapons.size(); i++) {
+			weap = weapons.get(i);
+			if (weap.isDiscarded()) {
+				weapons.remove(i);
+				continue;
+			}
+			weap.update(delta, player);
+		}
+
+		// Update the projectile manager and all projectiles
+		ProjectileManager.getInstance(world).update();
+
+		if (timePassed / 5 > activeZombies.size ) {
+			spawnZombie();
+		}
+
+		for (int i = activeZombies.size; --i >= 0;) {
+			zombie = activeZombies.get(i);
+			if (zombie.getState() == Enemy.State.DEAD) {
+				deadEntities.add(new DeadEntity(zombie.getCurrentFrame(), zombie.getX(), zombie.getY(), zombie.getPan()));
+				activeZombies.removeIndex(i);
+				zombiesPool.free(zombie);
+			}
+			else {
+				zombie.update(delta);
+			}
 		}
 		//zombie.update(delta);
 
@@ -348,11 +461,23 @@ public class InGameScreen implements Screen {
 		// Draw map
 		batch.draw(map);
 
-		// Draw a zombie
-		for (Enemy z: zombies) {
+		for (DeadEntity ent: deadEntities) {
+			batch.draw(ent);
+		}
+
+		// Draw weapons
+		for (Weapon weap: weapons) {
+			if (weap != player.getWeapon()) {
+				batch.draw(weap);
+			}
+		}
+
+		// Draw zombies
+		for (Enemy z: activeZombies) {
 			batch.draw(z);
 		}
-		batch.draw(zombie);
+
+		batch.draw(ProjectileManager.getInstance(world));
 
 		batch.end();
 
@@ -368,13 +493,14 @@ public class InGameScreen implements Screen {
 		batch.begin();
 		// Draw player
 		batch.draw(player);
+		batch.draw(player.getWeapon());
 		batch.end();
 
 // Debugging:
 // Build the FPS label text to be shown this frame by the Stage...
 		stringBuilder.setLength(0);
 		stringBuilder.append("FPS: ").append(Gdx.app.getGraphics().getFramesPerSecond());
-		stringBuilder.append("\n\nPlayer pos: " + (int)player.body.getPosition().x + "," + (int)player.body.getPosition().y + ".");
+		stringBuilder.append("\n\nPlayer pos: " + (int)player.getBody().getPosition().x + "," + (int)player.getBody().getPosition().y + ".");
 		label.setText(stringBuilder);
 		//label.setPosition( 30, ZShooter.getScreenHeight() - 30 - ( 4 * (font.getCapHeight() + font.getLineHeight()) * label.getFontScaleY()) );
 		label.setPosition( 30, 100);

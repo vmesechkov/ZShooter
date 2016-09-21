@@ -1,10 +1,10 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.entity;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
 
 import java.util.HashMap;
 
-public class PlayerAnimation extends EntityAnimation {
+public class PlayerAnimation extends com.mesetts.zshooter.game.entity.EntityAnimation {
 
 	HashMap<String,Animation> legsAnimations;
 

@@ -3,8 +3,13 @@ package com.mesetts.zshooter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-
-import java.util.Iterator;
+import com.mesetts.zshooter.game.entity.DeadEntity;
+import com.mesetts.zshooter.game.entity.Player;
+import com.mesetts.zshooter.game.entity.Entity;
+import com.mesetts.zshooter.game.weaponsys.Projectile;
+import com.mesetts.zshooter.game.weaponsys.ProjectileManager;
+import com.mesetts.zshooter.game.TileMap;
+import com.mesetts.zshooter.game.weaponsys.Weapon;
 
 public class ZBatch extends SpriteBatch {
 
@@ -43,6 +48,7 @@ public class ZBatch extends SpriteBatch {
 	private int entityImageHeight;
 	private int entityImageHalfWidth;
 	private int entityImageHalfHeight;
+	private Weapon weapon;
 	public void draw(Player player) {
 		// Draw the legs
 		tmpRegion = player.getCurrentLegsFrame();
@@ -54,37 +60,88 @@ public class ZBatch extends SpriteBatch {
 		entityImageHalfHeight = entityImageHeight / 2;
 
 		super.draw(		tmpRegion,
-						player.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+						player.getX() * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
 						entityImageHalfWidth, entityImageHalfHeight,
 						tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
 						1, 1,
 						player.getLegsPan());
 
+//		if (player.getWeapon() != null) {
+//			weapon = player.getWeapon();
+//
+//			tmpRegion = weapon.getCurrentFrame();
+//
+//			entityImageWidth = tmpRegion.getRegionWidth();
+//			entityImageHeight = tmpRegion.getRegionHeight();
+//			entityImageHalfWidth = entityImageWidth / 2;
+//			entityImageHalfHeight = entityImageHeight / 2;
+//
+//			super.draw(		tmpRegion,
+//					weapon.getX() * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, weapon.getY() * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+//					entityImageHalfWidth, entityImageHalfHeight,
+//					entityImageWidth, entityImageHeight,
+//					1, 1,
+//					weapon.getPan());
+//		}
+
 		// Draw the torso
 		tmpRegion = player.getCurrentTorsoFrame();
+		entityImageWidth = tmpRegion.getRegionWidth();
+		entityImageHeight = tmpRegion.getRegionHeight();
+		entityImageHalfWidth = entityImageWidth / 2;
+		entityImageHalfHeight = entityImageHeight / 2;
 		super.draw(		tmpRegion,
-						player.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+						player.getX() * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, player.getY() * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
 						entityImageHalfWidth, entityImageHalfHeight,
 						entityImageWidth, entityImageHeight,
 						1, 1,
 						player.getPan());
 
-		tmpRegion = player.bulletRegion;
-		Projectile p;
-		for (Iterator<Projectile> it = player.bullets.iterator(); it.hasNext(); ) {
-			p = it.next();
-			if (p != null) {
-				super.draw(tmpRegion,
-						p.getBody().getPosition().x * 128 - 4 - cameraOffset.x + screenCenterOffset.x, p.getBody().getPosition().y * 128 - 4 - cameraOffset.y + screenCenterOffset.y,
-						4, 4,
-						8, 8,
-						1, 1,
-						p.getBody().getAngle());
-				p.update(player, it);
-			}
-		}
+//		tmpRegion = player.bulletRegion;
+//		com.mesetts.zshooter.game.Projectile p;
+//		for (Iterator<Projectile> it = player.bullets.iterator(); it.hasNext(); ) {
+//			p = it.next();
+//			if (p != null) {
+//				super.draw(tmpRegion,
+//						p.getBody().getPosition().x * 128 - 4 - cameraOffset.x + screenCenterOffset.x, p.getBody().getPosition().y * 128 - 4 - cameraOffset.y + screenCenterOffset.y,
+//						4, 4,
+//						8, 8,
+//						1, 1,
+//						p.getBody().getAngle());
+//				p.update(player, it);
+//			}
+//		}
 	}
 
+	public void draw(Weapon weapon) {
+		tmpRegion = weapon.getCurrentFrame();
+
+		entityImageWidth = tmpRegion.getRegionWidth();
+		entityImageHeight = tmpRegion.getRegionHeight();
+		entityImageHalfWidth = entityImageWidth / 2;
+		entityImageHalfHeight = entityImageHeight / 2;
+
+		super.draw(		tmpRegion,
+				weapon.getX() * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, weapon.getY() * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+				entityImageHalfWidth, entityImageHalfHeight,
+				entityImageWidth, entityImageHeight,
+				1, 1,
+				weapon.getPan());
+	}
+
+	Projectile p;
+	public void draw(ProjectileManager manager) {
+
+		for (Projectile projectile : manager.getBullets()) {
+			p = projectile;
+			super.draw(p.getTexture(),
+					p.getBody().getPosition().x * ZShooter.WORLD_TILE_SIZE - 4 - cameraOffset.x + screenCenterOffset.x, p.getBody().getPosition().y * ZShooter.WORLD_TILE_SIZE - 4 - cameraOffset.y + screenCenterOffset.y,
+					4, 4,
+					8, 8,
+					1, 1,
+					p.getBody().getAngle());
+		}
+	}
 
 	// Entity rendering
 	public void draw(Entity entity) {
@@ -99,7 +156,7 @@ public class ZBatch extends SpriteBatch {
 			entityImageHalfHeight = entityImageHeight / 2;
 
 			super.draw(tmpRegion,
-					entity.getX() * 128 - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.getY() * 128 - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+					entity.getX() * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.getY() * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
 					entityImageHalfWidth, entityImageHalfHeight,
 					tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
 					1, 1,
@@ -107,6 +164,21 @@ public class ZBatch extends SpriteBatch {
 		}
 	}
 
+	public void draw(DeadEntity entity) {
+
+		tmpRegion = entity.texture;
+		entityImageWidth = tmpRegion.getRegionWidth();
+		entityImageHeight = tmpRegion.getRegionHeight();
+		entityImageHalfWidth = entityImageWidth / 2;
+		entityImageHalfHeight = entityImageHeight / 2;
+
+		super.draw(tmpRegion,
+				entity.posX * ZShooter.WORLD_TILE_SIZE - entityImageHalfWidth - cameraOffset.x + screenCenterOffset.x, entity.posY * ZShooter.WORLD_TILE_SIZE - entityImageHalfHeight - cameraOffset.y + screenCenterOffset.y,
+				entityImageHalfWidth, entityImageHalfHeight,
+				tmpRegion.getRegionWidth(), tmpRegion.getRegionHeight(),
+				1, 1,
+				entity.pan);
+	}
 
 /**
  * 	TileMap Rendering Section

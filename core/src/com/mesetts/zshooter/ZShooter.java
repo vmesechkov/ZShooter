@@ -19,12 +19,12 @@ public class ZShooter extends Game {
 	public static float musicVolume = 0.5f;
 	private static Vector2 screenSize;
 	public static AssetManager assets;
-	static Game game;
+	private static Game game;
 	public static int WORLD_TILE_SIZE = 128;
 
 	private static Music music;
 
-	ZShooter() {
+	public ZShooter() {
 		game = this;
 	}
 
@@ -47,30 +47,30 @@ public class ZShooter extends Game {
 		setScreen(LoadingScreen.getLoadingScreen(this));
 	}
 
-	static int getScreenWidth() {
+	public static int getScreenWidth() {
 		return (int)screenSize.x;
 	}
 
-	static int getScreenHeight() {
+	public static int getScreenHeight() {
 		return (int)screenSize.y;
 	}
 
-	static Viewport getViewport() {
+	public static Viewport getViewport() {
 		return viewport;
 	}
 
-	static Batch getBatch() {
+	public static ZBatch getBatch() {
 		return batch;
 	}
 
-	static Music getMusic() { return music; }
+	public static Music getMusic() { return music; }
 
-	static float getMusicVolume() { return musicVolume; }
+	public static float getMusicVolume() { return musicVolume; }
 
-	static float setMusicVolume(float volume) { return musicVolume = volume; }
+	public static float setMusicVolume(float volume) { return musicVolume = volume; }
 
-	static float getSoundVolume() { return soundVolume; }
+	public static float getSoundVolume() { return soundVolume; }
 
-	static float setSoundVolume(float volume) { return soundVolume = volume; }
+	public static float setSoundVolume(float volume) { return soundVolume = volume; }
 
 }

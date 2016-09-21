@@ -1,21 +1,22 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mesetts.zshooter.game.weaponsys.Handgun;
+import com.mesetts.zshooter.game.weaponsys.Weapon;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-public class Player extends Entity {
+public class Player extends com.mesetts.zshooter.game.entity.Entity {
 
 	private float legsPan;
 	private World world;
 
 	private float runSpeed;
 	private float walkSpeed;
+
+	private Weapon weapon;
 
 // PlayerAnimation is a custom class representing two maps to different
 // Animation objects containing references to TextureRegions
@@ -30,9 +31,12 @@ public class Player extends Entity {
 	public Player(World world, int tileSize) {
 		super(world, tileSize, CollisionShape.CIRCLE);
 		this.world = world;
+		this.health = 100;
+		this.alive = true;
 
-
-		bulletRegion = TextureRegion.split(bulletTexture, 4, 4)[0][0];
+		Texture weaponsSheet = new Texture(Gdx.files.internal("data/weapons_sheet_128.png"));
+		TextureRegion[][] weaponsFrames = TextureRegion.split(weaponsSheet, weaponsSheet.getWidth() / 14, weaponsSheet.getHeight() / 3);
+		this.weapon = new Handgun(weaponsFrames[0], 25, 15, 12, 6, 1, 10, 0.4f, 13f, world);
 	}
 
 // Called when you want to change the current frames of the player...
@@ -40,6 +44,10 @@ public class Player extends Entity {
 // For example, ("Run", 0.17f) - Name of animation, Time passed since last frame drawn
 	@Override
 	public void animate(String animationName, float deltaTime) {
+		if (lastAnimationName == null || !lastAnimationName.equals(animationName)) {
+			lastAnimationName = animationName;
+			stateTime = 0;
+		}
 		stateTime += deltaTime;
 		currentFrame = animation.getAnimation(animationName).getKeyFrame(stateTime);
 	}
@@ -92,52 +100,47 @@ public class Player extends Entity {
 
 	public float getLegsPan() {	return legsPan; }
 
-
-	public ArrayList<Projectile> bullets = new ArrayList<Projectile>();
-	Projectile bullet;
-
-	Texture bulletTexture = ZShooter.assets.get("data/bullet.png");
-	TextureRegion bulletRegion;
-
-	float x,y;
-	float fireStateTime;
-	int bulletsLeft = 30;
-
-	public void fire(float velX, float velY, float delta) {
-		fireStateTime += delta;
-		if (bulletsLeft <= 0) {
-			if (fireStateTime < 2) {
-				animateTorso("Reload", delta);
-				return;
-			}
-			fireStateTime = 0;
-			bulletsLeft = 30;
-			return;
-		}
-
-		if (fireStateTime > 0.033f) {
-			bullet = new Projectile(world);
-			x = (float) (body.getPosition().x + 0.4 * MathUtils.cosDeg(this.getPan() - 90f + ((float)Math.random() * 30f - 15f)));
-			y = (float) (body.getPosition().y + 0.4 * MathUtils.sinDeg(this.getPan() - 90f + ((float)Math.random() * 30f - 15f)));
-			bullet.getBody().setTransform(x, y, (float) Math.toRadians(this.getPan()));
-			bullet.speed.set(velX, velY);
-			bullet.speed.nor();
-			bullet.speed.scl(10);
-			bullet.getBody().setLinearVelocity(bullet.speed);
-			bullet.getInitialPosition().set(body.getPosition());
-			bullet.setDamage(10);
-			bullets.add(bullet);
-			fireStateTime = 0;
-
-			bulletsLeft -= 1;
-			//Gdx.app.log("Player: ", "This pan: " + this.getPan());
-		}
-		Gdx.app.log("Player: ", "Bullet count: " + bullets.size());
+	public void fire(float delta) {
+		// TODO reloading
+		weapon.fire(delta, this);
 	}
 
+	float weapX, weapY;
+	public void updateWeapon() {
+		weapX = (float)(this.getX() + weapon.getDistanceOffset() * Math.cos(body.getAngle() - Math.toRadians(90f + weapon.getAngleOffset())));
+		weapY = (float)(this.getY() + weapon.getDistanceOffset() * Math.sin(body.getAngle() - Math.toRadians(90f + weapon.getAngleOffset())));
+		weapon.setPosition(weapX, weapY);
+		weapon.setPan(pan);
+	}
+
+	public Weapon getWeapon() {
+		return weapon;
+	}
 
 	boolean isReloading;
 	public void reload() {
 
+	}
+
+	public float getStateTime() {
+		return stateTime;
+	}
+
+	public void setWeapon(Weapon weapon) {
+		this.weapon = weapon;
+	}
+
+	private boolean alive;
+
+	public boolean isAlive() {
+		return alive;
+	}
+
+	public void setAlive(boolean alive) {
+		this.alive = alive;
+	}
+
+	public void setStateTime(float stateTime) {
+		this.stateTime = stateTime;
 	}
 }

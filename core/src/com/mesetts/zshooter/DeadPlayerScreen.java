@@ -59,10 +59,10 @@ public class DeadPlayerScreen implements Screen {
             }
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 InGameScreen.getInGameScreen(game);
-                Database.getOurInstance().load();
-                float cordinateX = Database.getOurInstance().getCordinateX();
-                float cordinateY = Database.getOurInstance().getCordinateY();
-                InGameScreen.player.setPosition(cordinateX,cordinateY);
+//                Database.getOurInstance().load();
+//                float cordinateX = Database.getOurInstance().getCordinateX();
+//                float cordinateY = Database.getOurInstance().getCordinateY();
+//                InGameScreen.player.setPosition(cordinateX,cordinateY);
                 game.setScreen(InGameScreen.getInGameScreen(game));
             }
         });
@@ -81,7 +81,7 @@ public class DeadPlayerScreen implements Screen {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                    MainMenu.startGameButton.setText("New Game");
+                    //MainMenu.startGameButton.setText("New Game");
                     game.setScreen(MainMenu.getMainMenu(game));
             }
         });
@@ -91,7 +91,8 @@ public class DeadPlayerScreen implements Screen {
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(stage);
+		Gdx.input.setInputProcessor(stage);
+		InGameScreen.getInGameScreen(game).dispose();
     }
 
     @Override

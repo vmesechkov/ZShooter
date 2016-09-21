@@ -1,30 +1,29 @@
-package com.mesetts.zshooter;
+package com.mesetts.zshooter.game.weaponsys;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Pool;
 
-import java.util.Iterator;
-
-public class Projectile {
+public class Projectile implements Pool.Poolable {
 
 	private Body body;
-	private Vector2 initialPosition = new Vector2();
-	private World world;
-	Vector2 speed = new Vector2();
-
-	boolean isFlaggedForRemoval;
-
+	private Vector2 initialPosition;
+	private Vector2 velocity;
+	private boolean alive;
 	private float damage;
+	private TextureRegion texture;
 
 	Projectile(World world) {
-		this.world = world;
+		this.alive = false;
+		this.initialPosition = new Vector2();
+		this.velocity = new Vector2();
 
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -50,16 +49,35 @@ public class Projectile {
 		shape.dispose();							// Get rid of the shape
 	}
 
-	public void update(Player player, Iterator<Projectile> it) {
-		if (initialPosition.dst2(body.getPosition()) > 900 || isFlaggedForRemoval) {
-			world.destroyBody(this.body);
-			it.remove();
+	public void init(TextureRegion texture, float posX, float posY, float pan, float velX, float velY, float damage) {
+		this.texture = texture;
+		this.damage = damage;
+		body.setTransform(posX, posY, (float) Math.toRadians(pan));
+		initialPosition.set(body.getPosition());
+		velocity.set(velX, velY);
+		alive = true;
+	}
+
+	@Override
+	public void reset() {
+		velocity.set(0,0);
+		body.setLinearVelocity(velocity);
+		body.getPosition().set(-999, -999);
+		alive = false;
+	}
+
+	public void update() {
+		body.setLinearVelocity(velocity);
+		if (initialPosition.dst2(body.getPosition()) > 900) {
+			alive = false;
 		}
 	}
 
-	public void setDamage(float damage) {
-		this.damage = damage;
+	public void remove() {
+		alive = false;
 	}
+
+	public boolean isAlive() { return alive; }
 
 	public float getDamage() {
 		return damage;
@@ -69,7 +87,5 @@ public class Projectile {
 		return body;
 	}
 
-	public Vector2 getInitialPosition() {
-		return initialPosition;
-	}
+	public TextureRegion getTexture() { return texture; }
 }

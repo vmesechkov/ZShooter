@@ -40,7 +40,6 @@ public class IntroScreen implements Screen {
         background = ZShooter.assets.get("data/Textures/Walking zombies for the introscreens.jpg");
 
         stage = new Stage(ZShooter.getViewport(), ZShooter.getBatch());
-        Gdx.input.setInputProcessor(stage);
         continueButton = new TextButton("Continue", GUI.getGUI().getTextButtonStyle());
         continueButton.setColor(colorPrim);
         continueButton.setHeight(ZShooter.getScreenHeight() / 6); //** Button Height **//
@@ -68,7 +67,7 @@ public class IntroScreen implements Screen {
 
     @Override
     public void show() {
-
+		Gdx.input.setInputProcessor(stage);
     }
 
     @Override
